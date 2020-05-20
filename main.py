@@ -3,6 +3,7 @@ import glob
 import os
 import time
 from collections import deque
+from hyperdash import Experiment
 
 import gym
 import numpy as np
@@ -18,7 +19,9 @@ from a2c_ppo_acktr.envs import make_vec_envs
 from a2c_ppo_acktr.model import Policy
 from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
-
+import os
+os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**84)
+import cv2
 
 def main():
     args = get_args()
@@ -39,7 +42,8 @@ def main():
     device = torch.device("cuda:0" if args.cuda else "cpu")
 
     envs = make_vec_envs(args.env_name, args.seed, args.num_processes,
-                         args.gamma, args.log_dir, device, False)
+                         args.gamma, args.log_dir, device, False, args.custom_gym)
+
 
     actor_critic = Policy(
         envs.observation_space.shape,
