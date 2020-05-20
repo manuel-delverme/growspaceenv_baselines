@@ -83,6 +83,10 @@ def get_args():
         default=5,
         help='number of forward steps in A2C (default: 5)')
     parser.add_argument(
+        '--custom-gym',
+        default='',
+        help='import some dependency package for thew gym env')
+    parser.add_argument(
         '--ppo-epoch',
         type=int,
         default=4,
