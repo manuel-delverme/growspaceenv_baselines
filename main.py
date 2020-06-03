@@ -1,10 +1,13 @@
+try:
+    from comet_ml import Experiment
+    comet_loaded = True
+except ImportError:
+    comet_loaded = False
 import copy
 import glob
 import os
 import time
 from collections import deque
-from hyperdash import Experiment
-
 import gym
 import numpy as np
 import torch
@@ -22,10 +25,20 @@ from evaluation import evaluate
 import os
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**84)
 import cv2
+from comet_ml import Experiment
 
 def main():
     args = get_args()
-
+    if comet_loaded:
+        experiment = Experiment(
+            api_key="WRmA8ms9A78K85fLxcv8Nsld9",
+            project_name="general",
+            workspace="yasmeenvh")
+        experiment.set_name("ppo_growspace")
+        for key, value in vars(args).items():
+            experiment.log_parameter(key, value)
+    else:
+        experiment = None
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
 
@@ -102,6 +115,9 @@ def main():
     rollouts.to(device)
 
     episode_rewards = deque(maxlen=10)
+    episode_length = deque(maxlen=10)
+    episode_success_rate = deque(maxlen=100)
+    episode_total = 0
 
     start = time.time()
     num_updates = int(
@@ -127,6 +143,7 @@ def main():
             for info in infos:
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
+                    episode_length.append(info['episode']['l'])
 
             # If done then clean the history of observations.
             masks = torch.FloatTensor(
@@ -182,6 +199,28 @@ def main():
         if j % args.log_interval == 0 and len(episode_rewards) > 1:
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
+            if experiment is not None:
+                experiment.log_metric(
+                    "Reward Mean",
+                    np.mean(episode_rewards),
+                    step=total_num_steps)
+                experiment.log_metric(
+                    "Reward Min", np.min(episode_rewards), step=total_num_steps)
+                experiment.log_metric(
+                    "Reward Max", np.max(episode_rewards), step=total_num_steps)
+                experiment.log_metric(
+                    "Episode Length Mean ",
+                    np.mean(episode_length),
+                    step=total_num_steps)
+                experiment.log_metric(
+                    "Episode Length Min",
+                    np.min(episode_length),
+                    step=total_num_steps)
+                experiment.log_metric(
+                    "Episode Length Max",
+                    np.max(episode_length),
+                    step=total_num_steps)
+
             print(
                 "Updates {}, num timesteps {}, FPS {} \n Last {} training episodes: mean/median reward {:.1f}/{:.1f}, min/max reward {:.1f}/{:.1f}\n"
                 .format(j, total_num_steps,
