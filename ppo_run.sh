@@ -16,6 +16,7 @@ virtualenv --no-download $SLURM_TMPDIR/plantrl
 source $SLURM_TMPDIR/plantrl/bin/activate
 
 pip install --no-index torch torchvision   # why is this not in virtualenv
+pip install absl-py
 pip install --no-index -r requirements_y.txt
 
 # 2. Launch your job, tell it to save the model in $SLURM_TMPDIR
