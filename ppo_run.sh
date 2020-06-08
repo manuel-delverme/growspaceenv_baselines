@@ -4,8 +4,8 @@
 #SBATCH --gres=gpu:1                     # Ask for 1 GPU
 #SBATCH --mem=32G                        # Ask for 32 GB of RAM
 #SBATCH --time=0:30:00                   # The job will run for 30 minutes
-#SBATCH --output= /scratch/joboutput.txt  # Write the log in $SCRATCH
-#SBATCH --error= /scratch/joberror.txt  # Write the log in $SCRATCH
+#SBATCH --output=joboutput.txt  # Write the log in $SCRATCH
+#SBATCH --error=joberror.txt  # Write the log in $SCRATCH
 
 
 # 1. Create your environement locally
