@@ -17,6 +17,7 @@ source $SLURM_TMPDIR/plantrl/bin/activate
 
 pip install --no-index torch torchvision   # why is this not in virtualenv
 pip install absl-py
+pip install gym==0.7.4
 pip install --no-index -r requirements_y.txt
 
 # 2. Launch your job, tell it to save the model in $SLURM_TMPDIR
