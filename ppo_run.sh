@@ -17,7 +17,7 @@ pip install --no-index -r requirements_y.txt
 # 2. Launch your job, tell it to save the model in $SLURM_TMPDIR
 #    and look for the dataset into $SLURM_TMPDIR
 
-python main.py --path $SLURM_TMPDIR --data_path $SLURM_TMPDIR
+python main.py --env-name "GrowSpaceEnv-Images-v0" --custom-gym growspace --algo ppo --use-gae --lr 2.5e-4 --clip-param 0.1 --value-loss-coef 0.5 --num-processes 1 --num-steps 75 --num-mini-batch 4 --log-interval 1 --use-linear-lr-decay --entropy-coef 0.01
 
 # 5. Copy whatever you want to save on $SCRATCH
 cp $SLURM_TMPDIR/runtest1 $SCRATCH
