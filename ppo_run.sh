@@ -1,10 +1,14 @@
 #!/bin/bash
-#SBATCH --account=def-mlefsrud         # Yoshua pays for your job
+#SBATCH --account=def-mlefsrud         
 #SBATCH --cpus-per-task=6                # Ask for 6 CPUs
 #SBATCH --gres=gpu:1                     # Ask for 1 GPU
 #SBATCH --mem=32G                        # Ask for 32 GB of RAM
-#SBATCH --time=3:00:00                   # The job will run for 3 hours
-#SBATCH -o /scratch/<user>/slurm-%j.out  # Write the log in $SCRATCH# 1. Create your environement locally
+#SBATCH --time=0:30:00                   # The job will run for 30 minutes
+#SBATCH --output= /scratch/joboutput.txt  # Write the log in $SCRATCH
+#SBATCH --error= /scratch/joberror.txt  # Write the log in $SCRATCH
+
+
+# 1. Create your environement locally
 module load python/3.7
 
 virtualenv --no-download $SLURM_TMPDIR/plantrl
