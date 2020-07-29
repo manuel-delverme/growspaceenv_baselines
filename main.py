@@ -32,8 +32,8 @@ def main():
     if comet_loaded:
         experiment = Experiment(
             api_key="WRmA8ms9A78K85fLxcv8Nsld9",
-            project_name="general",
-            workspace="growspace-ppo")
+            project_name="growspace-ppo",
+            workspace="yasmeenvh")
         experiment.set_name("run1")
         for key, value in vars(args).items():
             experiment.log_parameter(key, value)
