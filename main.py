@@ -34,7 +34,7 @@ def main():
             api_key="WRmA8ms9A78K85fLxcv8Nsld9",
             project_name="growspace-ppo",
             workspace="yasmeenvh")
-        experiment.set_name("run1")
+        experiment.set_name("run2")
         for key, value in vars(args).items():
             experiment.log_parameter(key, value)
     else:
