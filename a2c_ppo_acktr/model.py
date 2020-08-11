@@ -175,7 +175,7 @@ class CNNBase(NNBase):
 
         ### first kernels are 8, 4, 3  now we try 6,4,3
         self.main = nn.Sequential(
-            init_(nn.Conv2d(num_inputs, 32, 10, stride=4)), nn.ReLU(),
+            init_(nn.Conv2d(num_inputs, 32, 3, stride=4)), nn.ReLU(),
             init_(nn.Conv2d(32, 64, 6, stride=2)), nn.ReLU(),
             init_(nn.Conv2d(64, 32, 3, stride=1)), nn.ReLU(), Flatten(),
             init_(nn.Linear(32 * 7 * 7, hidden_size)), nn.ReLU())
