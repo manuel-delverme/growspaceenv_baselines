@@ -167,7 +167,7 @@ class NNBase(nn.Module):
 
 
 class CNNBase(NNBase):
-    def __init__(self, num_inputs, recurrent=False, hidden_size=256):
+    def __init__(self, num_inputs, recurrent=False, hidden_size=512):
         super(CNNBase, self).__init__(recurrent, hidden_size, hidden_size)
 
         init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
@@ -177,9 +177,9 @@ class CNNBase(NNBase):
 
         ### first kernels are 8, 4, 3  now we try 6,4,3
         self.main = nn.Sequential(
-            init_(nn.Conv2d(num_inputs, 32, 3, stride=2)), nn.ReLU(),  #three channels for binary and rgb
+            init_(nn.Conv2d(num_inputs, 32, 7, stride=2)), nn.ReLU(),  #three channels for binary and rgb
             init_(nn.Conv2d(32, 64, 5, stride=2)), nn.ReLU(),
-            init_(nn.Conv2d(64, 32, 5, stride=2)), nn.ReLU(), Flatten(),
+            init_(nn.Conv2d(64, 32, 3, stride=1)), nn.ReLU(), Flatten(),
             init_(nn.Linear(32 * 7 * 7, hidden_size)), nn.ReLU())
 
         init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
