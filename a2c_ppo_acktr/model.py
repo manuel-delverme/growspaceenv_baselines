@@ -26,7 +26,7 @@ class Policy(nn.Module):
                 raise NotImplementedError
 
         self.base = base(obs_shape[0], **base_kwargs)
-
+        print("obs_shape[0]:", obs_shape[0])
         if action_space.__class__.__name__ == "Discrete":
             num_outputs = action_space.n
             self.dist = Categorical(self.base.output_size, num_outputs)
@@ -173,7 +173,7 @@ class CNNBase(NNBase):
         init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
                                constant_(x, 0), nn.init.calculate_gain('relu'))
 
-        print("number of inputs:", num_inputs)
+        print("number of inputs:", num_inputs.shape)
 
         ### first kernels are 8, 4, 3  now we try 6,4,3
         self.main = nn.Sequential(
