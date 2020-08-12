@@ -173,6 +173,8 @@ class CNNBase(NNBase):
         init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
                                constant_(x, 0), nn.init.calculate_gain('relu'))
 
+        print("number of inputs:", num_inputs)
+
         ### first kernels are 8, 4, 3  now we try 6,4,3
         self.main = nn.Sequential(
             init_(nn.Conv2d(num_inputs, 32, 8, stride=1, padding=2)), nn.ReLU(),  #three channels for binary and rgb
