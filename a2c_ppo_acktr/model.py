@@ -177,9 +177,9 @@ class CNNBase(NNBase):
 
         ### first kernels are 8, 4, 3  now we try 6,4,3
         self.main = nn.Sequential(
-            init_(nn.Conv2d(num_inputs, 32, 8, stride=4)), nn.ReLU(),  #three channels for binary and rgb
-            init_(nn.Conv2d(32, 64, 4, stride=2)), nn.ReLU(),
-            init_(nn.Conv2d(64, 32, 3, stride=1)), nn.ReLU(), Flatten(),
+            init_(nn.Conv2d(num_inputs, 32, 8, stride=2)), nn.ReLU(),  #three channels for binary and rgb
+            init_(nn.Conv2d(32, 32, 4, stride=2)), nn.ReLU(),
+            init_(nn.Conv2d(32, 32, 4, stride=2)), nn.ReLU(), Flatten(),
             #init_(nn.Conv2d(32, 64, 2, stride=1)), nn.ReLU(),Flatten(),
             init_(nn.Linear(32 * 7 * 7, hidden_size)), nn.ReLU())
 
@@ -192,7 +192,7 @@ class CNNBase(NNBase):
 
     def forward(self, inputs, rnn_hxs, masks):
         x = self.main(inputs / 255.0)
-        print("what is X:", x)
+        #print("what is X:", x)
 
         if self.is_recurrent:
             x, rnn_hxs = self._forward_gru(x, rnn_hxs, masks)
