@@ -147,7 +147,7 @@ def main():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
 
-            if 'num_branches' in infos.keys():
+            if 'num_branches' in infos[0].keys():
                 episode_branches.append(infos[0]['num_branches'])
 
 
