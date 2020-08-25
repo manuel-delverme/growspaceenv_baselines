@@ -87,6 +87,10 @@ def get_args():
         default='',
         help='import some dependency package for thew gym env')
     parser.add_argument(
+        '--comet',
+        default='',
+        help='name of experiment for comet')
+    parser.add_argument(
         '--ppo-epoch',
         type=int,
         default=4,
