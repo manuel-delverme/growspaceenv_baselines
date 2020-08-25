@@ -29,12 +29,13 @@ from comet_ml import Experiment
 
 def main():
     args = get_args()
+
     if comet_loaded:
         experiment = Experiment(
             api_key="WRmA8ms9A78K85fLxcv8Nsld9",
-            project_name="growspace-ppo",
+            project_name="growspaceenv-ppo",
             workspace="yasmeenvh")
-        experiment.set_name("run2")
+        experiment.set_name(args.comet)
         for key, value in vars(args).items():
             experiment.log_parameter(key, value)
     else:
@@ -209,6 +210,8 @@ def main():
                 experiment.log_metric(
                     "Reward Max", np.max(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
+                    "Number of Branches", infos["new_branches"], step=total_num_steps)
+                experiment.log_metric(
                     "Episode Length Mean ",
                     np.mean(episode_length),
                     step=total_num_steps)
@@ -220,6 +223,7 @@ def main():
                     "Episode Length Max",
                     np.max(episode_length),
                     step=total_num_steps)
+
 
             print(
                 "Updates {}, num timesteps {}, FPS {} \n Last {} training episodes: mean/median reward {:.1f}/{:.1f}, min/max reward {:.1f}/{:.1f}\n"
