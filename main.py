@@ -117,6 +117,7 @@ def main():
 
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
+    episode_branches = deque(maxlen=10)
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
 
@@ -145,6 +146,10 @@ def main():
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
+
+                if 'num_branches' in info.keys():
+                    episode_branches.append(info['num_branches'])
+
 
             # If done then clean the history of observations.
             masks = torch.FloatTensor(
@@ -210,7 +215,11 @@ def main():
                 experiment.log_metric(
                     "Reward Max", np.max(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
-                    "Number of Branches", infos["new_branches"], step=total_num_steps)
+                    "Number of Mean Branches", np.mean(episode_rewards), step=total_num_steps)
+                experiment.log_metric(
+                    "Number of Min Branches", np.min(episode_rewards), step=total_num_steps)
+                experiment.log_metric(
+                    "Number of Max Branches", np.max(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
                     "Episode Length Mean ",
                     np.mean(episode_length),
