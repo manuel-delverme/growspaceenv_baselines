@@ -147,8 +147,8 @@ def main():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
 
-                if 'num_branches' in info.keys():
-                    episode_branches.append(info['num_branches'])
+            if 'num_branches' in infos.keys():
+                episode_branches.append(infos['num_branches'])
 
 
             # If done then clean the history of observations.
