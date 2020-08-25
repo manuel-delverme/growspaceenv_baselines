@@ -148,7 +148,7 @@ def main():
                     episode_length.append(info['episode']['l'])
 
             if 'num_branches' in infos.keys():
-                episode_branches.append(infos['num_branches'])
+                episode_branches.append(infos[0]['num_branches'])
 
 
             # If done then clean the history of observations.
