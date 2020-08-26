@@ -225,11 +225,11 @@ def main():
                     "Reward Min", np.min(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
                     "Reward Max", np.max(episode_rewards), step=total_num_steps)
-                #experiment.log_metric(
+                experiment.log_metric(
                     #"Number of Mean Branches", np.mean(episode_rewards), step=total_num_steps)
-                #experiment.log_metric(
+                experiment.log_metric(
                     #"Number of Min Branches", np.min(episode_rewards), step=total_num_steps)
-                #experiment.log_metric(
+                experiment.log_metric(
                     #"Number of Max Branches", np.max(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
                     "Episode Length Mean ",
