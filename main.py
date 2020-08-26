@@ -150,12 +150,12 @@ def main():
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
-                    print("ep rewards:", episode_rewards)
+                    #print("ep rewards:", episode_rewards)
                 #if 'num_branches' in info.keys()
                 #print("episode_reward:", episode_rewards)
                 if 'new_branches' in info.keys():
                     new_branches.append(info['new_branches'])
-                    print("what is new branches", new_branches)
+                    #print("what is new branches", new_branches)
             #if 'num_branches' in infos[0].keys():
                 #episode_branches.append(infos[0]['num_branches'])
 
@@ -173,10 +173,10 @@ def main():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
-        print("before")
-        episode_branches.append(np.asarray(np.mean(new_branches)))
-        print("after")
-        print(episode_branches)
+        #print("before")
+        episode_branches.append(np.asarray([[np.mean(new_branches)]]))
+        #print("after")
+        #print(episode_branches)
         if args.gail:
             if j >= 10:
                 envs.venv.eval()
