@@ -151,13 +151,11 @@ def main():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
                     #print("ep rewards:", episode_rewards)
-                #if 'num_branches' in info.keys()
-                #print("episode_reward:", episode_rewards)
-                if 'new_branches' in info.keys():
-                    new_branches.append(info['new_branches'])
+
+                #if 'new_branches' in info.keys():
+                    #new_branches.append(info['new_branches'])
                     #print("what is new branches", new_branches)
-            #if 'num_branches' in infos[0].keys():
-                #episode_branches.append(infos[0]['num_branches'])
+
 
 
             # If done then clean the history of observations.
@@ -174,7 +172,7 @@ def main():
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
         #print("before")
-        episode_branches.append(np.asarray([[np.mean(new_branches)]]))
+        #episode_branches.append(np.asarray([[np.mean(new_branches)]]))
         #print("after")
         #print(episode_branches)
         if args.gail:
@@ -227,12 +225,12 @@ def main():
                     "Reward Min", np.min(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
                     "Reward Max", np.max(episode_rewards), step=total_num_steps)
-                experiment.log_metric(
-                    "Number of Mean Branches", np.mean(episode_rewards), step=total_num_steps)
-                experiment.log_metric(
-                    "Number of Min Branches", np.min(episode_rewards), step=total_num_steps)
-                experiment.log_metric(
-                    "Number of Max Branches", np.max(episode_rewards), step=total_num_steps)
+                #experiment.log_metric(
+                    #"Number of Mean Branches", np.mean(episode_rewards), step=total_num_steps)
+                #experiment.log_metric(
+                    #"Number of Min Branches", np.min(episode_rewards), step=total_num_steps)
+                #experiment.log_metric(
+                    #"Number of Max Branches", np.max(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
                     "Episode Length Mean ",
                     np.mean(episode_length),
