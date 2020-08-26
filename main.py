@@ -142,8 +142,9 @@ def main():
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
 
-            print(infos.keys())
+
             for info in infos:
+                print(info.keys())
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
