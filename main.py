@@ -117,7 +117,7 @@ def main():
 
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
-    episode_branches = deque(maxlen=10)
+    #episode_branches = deque(maxlen=10)
     #new_branches = []
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
@@ -133,7 +133,7 @@ def main():
             utils.update_linear_schedule(
                 agent.optimizer, j, num_updates,
                 agent.optimizer.lr if args.algo == "acktr" else args.lr)
-        new_branches = []
+        #new_branches = []
         for step in range(args.num_steps):
             # Sample actions
             with torch.no_grad():
