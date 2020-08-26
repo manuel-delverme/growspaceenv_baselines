@@ -150,11 +150,12 @@ def main():
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
-
+                    print("ep rewards:", episode_rewards)
                 #if 'num_branches' in info.keys()
                 #print("episode_reward:", episode_rewards)
                 if 'new_branches' in info.keys():
                     new_branches.append(info['new_branches'])
+                    print("what is new branches", new_branches)
             #if 'num_branches' in infos[0].keys():
                 #episode_branches.append(infos[0]['num_branches'])
 
