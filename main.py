@@ -144,13 +144,15 @@ def main():
 
 
             for info in infos:
-                print(info.keys())
+                #print(info.keys())
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
 
                 #if 'num_branches' in info.keys()
-                print("episode_reward:", episode_rewards)
+                #print("episode_reward:", episode_rewards)
+                if 'new_branches' in info.keys():
+                    episode_branches(info['new_branches'])
             #if 'num_branches' in infos[0].keys():
                 #episode_branches.append(infos[0]['num_branches'])
 
@@ -168,6 +170,7 @@ def main():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
+
 
         if args.gail:
             if j >= 10:
@@ -191,6 +194,7 @@ def main():
         value_loss, action_loss, dist_entropy = agent.update(rollouts)
 
         rollouts.after_update()
+
 
         # save for every interval-th episode or for the last epoch
         if (j % args.save_interval == 0
