@@ -172,7 +172,7 @@ def main():
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
 
-            episode_branches.append(np.asarray(np.mean((new_branches)))
+        episode_branches.append(np.asarray(np.mean((new_branches))))
 
         if args.gail:
             if j >= 10:
