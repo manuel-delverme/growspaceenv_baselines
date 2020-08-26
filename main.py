@@ -172,9 +172,10 @@ def main():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
-
-        episode_branches.append(np.asarray(np.mean((new_branches))))
-
+        print("before")
+        episode_branches.append(np.asarray(np.mean(new_branches)))
+        print("after")
+        print(episode_branches)
         if args.gail:
             if j >= 10:
                 envs.venv.eval()
