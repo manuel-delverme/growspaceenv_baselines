@@ -117,7 +117,7 @@ def main():
 
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
-    episode_branches = deque(maxlen=10)
+    episode_branches = deque(maxlen=100)
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
 
