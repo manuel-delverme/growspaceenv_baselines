@@ -117,7 +117,7 @@ def main():
 
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
-    #episode_branches = deque(maxlen=10)
+    episode_branches = deque(maxlen=10)
     #new_branches = []
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
@@ -133,7 +133,7 @@ def main():
             utils.update_linear_schedule(
                 agent.optimizer, j, num_updates,
                 agent.optimizer.lr if args.algo == "acktr" else args.lr)
-        #new_branches = []
+        new_branches = []
         for step in range(args.num_steps):
             # Sample actions
             with torch.no_grad():
@@ -152,8 +152,8 @@ def main():
                     episode_length.append(info['episode']['l'])
                     #print("ep rewards:", episode_rewards)
 
-                #if 'new_branches' in info.keys():
-                    #new_branches.append(info['new_branches'])
+                if 'new_branches' in info.keys():
+                    new_branches.append(info['new_branches'])
                     #print("what is new branches", new_branches)
 
 
@@ -172,7 +172,7 @@ def main():
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
         #print("before")
-        #episode_branches.append(np.asarray([[np.mean(new_branches)]]))
+        episode_branches.append(np.asarray([[np.mean(new_branches)]]))
         #print("after")
         #print(episode_branches)
         if args.gail:
