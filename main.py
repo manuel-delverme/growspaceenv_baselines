@@ -117,7 +117,8 @@ def main():
 
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
-    episode_branches = deque(maxlen=100)
+    episode_branches = deque(maxlen=10)
+    new_branches = []
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
 
@@ -152,7 +153,7 @@ def main():
                 #if 'num_branches' in info.keys()
                 #print("episode_reward:", episode_rewards)
                 if 'new_branches' in info.keys():
-                    episode_branches(info['new_branches'])
+                    new_branches(info['new_branches'])
             #if 'num_branches' in infos[0].keys():
                 #episode_branches.append(infos[0]['num_branches'])
 
@@ -171,7 +172,7 @@ def main():
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
 
-
+            episode_branches.append(np.mean(new_branches))
         if args.gail:
             if j >= 10:
                 envs.venv.eval()
