@@ -21,8 +21,10 @@ parser.add_argument(
     help='log interval, one log per n updates (default: 10)')
 parser.add_argument(
     '--env-name',
-    default='PongNoFrameskip-v4',
+    default='GrowSpaceEnv-Images-v0',
     help='environment to train on (default: PongNoFrameskip-v4)')
+parser.add_argument(
+    '--custom-gym', default='growspace', help='The gym to load from')
 parser.add_argument(
     '--load-dir',
     default='./trained_models/',
