@@ -126,6 +126,7 @@ def main():
     num_updates = int(
         args.num_env_steps) // args.num_steps // args.num_processes
     print("what are the num_updates",num_updates)
+    x = 0
     for j in range(num_updates):
 
         if args.use_linear_lr_decay:
@@ -156,6 +157,12 @@ def main():
                     new_branches.append(info['new_branches'])
                     #print("what is new branches", new_branches)
 
+                if j == x:
+                    if 'img' in info.keys():
+                        img = info['img']
+                        path = './hittiyas/growspaceenv_braselines/scripts/imgs/'
+                        cv2.imwrite(os.path.join(path, 'step' + str(step) + '.png'), img)
+                    x += 1000
 
 
             # If done then clean the history of observations.
