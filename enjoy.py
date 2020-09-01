@@ -27,7 +27,7 @@ parser.add_argument(
     '--custom-gym', default='growspace', help='The gym to load from')
 parser.add_argument(
     '--load-dir',
-    default='./trained_models/',
+    default='./trained_models/ppo/',
     help='directory to save agent logs (default: ./trained_models/ppo/)')
 parser.add_argument(
     '--non-det',
