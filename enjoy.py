@@ -28,7 +28,7 @@ parser.add_argument(
 parser.add_argument(
     '--load-dir',
     default='./trained_models/',
-    help='directory to save agent logs (default: ./trained_models/)')
+    help='directory to save agent logs (default: ./trained_models/ppo/)')
 parser.add_argument(
     '--non-det',
     action='store_true',
