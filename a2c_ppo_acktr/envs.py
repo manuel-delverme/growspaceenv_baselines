@@ -54,11 +54,11 @@ def make_env(env_id, seed, rank, log_dir, allow_early_resets, custom_gym):
                 os.path.join(log_dir, str(rank)),
                 allow_early_resets=allow_early_resets)
             
-        elif len(env.observation_space.shape) == 3:
-            raise NotImplementedError(
-                "CNN models work only for atari,\n"
-                "please use a custom wrapper for a custom pixel input env.\n"
-                "See wrap_deepmind for an example.")
+        #elif len(env.observation_space.shape) == 3:
+            #raise NotImplementedError(
+                #"CNN models work only for atari,\n"
+               # "please use a custom wrapper for a custom pixel input env.\n"
+                #"See wrap_deepmind for an example.")
 
         # If the input has shape (W,H,3), wrap for PyTorch convolutions
         obs_shape = env.observation_space.shape
