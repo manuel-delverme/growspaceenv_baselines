@@ -21,13 +21,13 @@ parser.add_argument(
     help='log interval, one log per n updates (default: 10)')
 parser.add_argument(
     '--env-name',
-    default='GrowSpaceEnv-Images-v0',
+    default="GrowSpaceEnv-Images-v0",
     help='environment to train on (default: PongNoFrameskip-v4)')
 parser.add_argument(
     '--custom-gym', default='growspace', help='The gym to load from')
 parser.add_argument(
     '--load-dir',
-    default='./trained_models/ppo/',
+    default='/home/y/Documents/growspaceenv_baselines/scripts/GrowSpaceEnv-Images-v0.pt',
     help='directory to save agent logs (default: ./trained_models/ppo/)')
 parser.add_argument(
     '--non-det',
@@ -53,7 +53,7 @@ render_func = get_render_func(env)
 
 # We need to use the same statistics for normalization as used in training
 actor_critic, ob_rms = \
-            torch.load(os.path.join(args.load_dir, args.env_name + ".pt"))
+            torch.load(args.load_dir, map_location='cpu')
 
 vec_norm = get_vec_normalize(env)
 if vec_norm is not None:
