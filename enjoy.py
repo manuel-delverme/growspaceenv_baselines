@@ -2,6 +2,7 @@ import argparse
 import os
 # workaround to unpickle olf model files
 import sys
+import time
 
 import numpy as np
 import torch
@@ -54,6 +55,7 @@ render_func = get_render_func(env)
 # We need to use the same statistics for normalization as used in training
 actor_critic, ob_rms = \
             torch.load(args.load_dir, map_location='cpu')
+print("check1")
 
 vec_norm = get_vec_normalize(env)
 if vec_norm is not None:
@@ -63,12 +65,12 @@ if vec_norm is not None:
 recurrent_hidden_states = torch.zeros(1,
                                       actor_critic.recurrent_hidden_state_size)
 masks = torch.zeros(1, 1)
-
+print("check2")
 obs = env.reset()
-
+print("check3")
 if render_func is not None:
     render_func('human')
-
+print("check4")
 if args.env_name.find('Bullet') > -1:
     import pybullet as p
 
@@ -76,23 +78,25 @@ if args.env_name.find('Bullet') > -1:
     for i in range(p.getNumBodies()):
         if (p.getBodyInfo(i)[0].decode() == "torso"):
             torsoId = i
-
+print("check5")
 while True:
     with torch.no_grad():
         value, action, _, recurrent_hidden_states = actor_critic.act(
             obs, recurrent_hidden_states, masks, deterministic=args.det)
 
     # Obser reward and next obs
+    print("here")
     obs, reward, done, _ = env.step(action)
-
+    print("after")
     masks.fill_(0.0 if done else 1.0)
 
-    if args.env_name.find('Bullet') > -1:
-        if torsoId > -1:
-            distance = 5
-            yaw = 0
-            humanPos, humanOrn = p.getBasePositionAndOrientation(torsoId)
-            p.resetDebugVisualizerCamera(distance, yaw, -20, humanPos)
-
+    # if args.env_name.find('Bullet') > -1:
+    #     if torsoId > -1:
+    #         distance = 5
+    #         yaw = 0
+    #         humanPos, humanOrn = p.getBasePositionAndOrientation(torsoId)
+    #         p.resetDebugVisualizerCamera(distance, yaw, -20, humanPos)
+    print(f"action: {action}, reward: {reward}, done: {done}")
     if render_func is not None:
         render_func('human')
+    time.sleep(.5)
