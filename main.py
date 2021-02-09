@@ -105,7 +105,7 @@ def main():
             dataset=expert_dataset,
             batch_size=args.gail_batch_size,
             shuffle=True,
-            drop_last=drop_last)-
+            drop_last=drop_last)
 
     rollouts = RolloutStorage(args.num_steps, args.num_processes,
                               envs.observation_space.shape, envs.action_space,
