@@ -126,7 +126,7 @@ def main():
     start = time.time()
     num_updates = int(
         args.num_env_steps) // args.num_steps // args.num_processes
-    print("what are the num_updates",num_updates)
+    #print("what are the num_updates",num_updates)
     x = 0
     for j in range(num_updates):
 
@@ -148,7 +148,7 @@ def main():
             # misc = {"tips": tips, "target": self.target, "light": self.x1_light, "light width": LIGHT_WIDTH, "step": self.steps. "new_branches": self.new_branches}
 
             for info in infos:
-                print("what is info:",info.keys())
+                #print("what is info:",info.keys())
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
