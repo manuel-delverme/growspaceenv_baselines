@@ -135,7 +135,7 @@ def main():
             utils.update_linear_schedule(
                 agent.optimizer, j, num_updates,
                 agent.optimizer.lr if args.algo == "acktr" else args.lr)
-        new_branches = []
+        #new_branches = []
         for step in range(args.num_steps):
             # Sample actions
             with torch.no_grad():
@@ -145,7 +145,7 @@ def main():
 
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
-            # misc = {"tips": tips, "target": self.target, "light": self.x1_light, "light width": LIGHT_WIDTH, "step": self.steps. "new_branches": self.new_branches}
+            #misc = {"tips": tips, "target": self.target, "light": self.x1_light, "light width": LIGHT_WIDTH, "step": self.steps. "new_branches": self.new_branches}
 
             for info in infos:
                 #print("what is info:",info.keys())
@@ -156,6 +156,9 @@ def main():
 
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
+                    print("what is in new branches", info['new_branches'])
+                    print("type of data:", type(info['new_branches']))
+
                     #print("what is new branches", new_branches)
 
                 if 'light width' in info.keys():
