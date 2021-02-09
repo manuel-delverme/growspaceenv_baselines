@@ -156,8 +156,8 @@ def main():
 
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
-                    print("what is in new branches", info['new_branches'])
-                    print("type of data:", type(info['new_branches']))
+                    #print("what is in new branches", info['new_branches'])
+                    # print("type of data:", type(info['new_branches']))
 
                     #print("what is new branches", new_branches)
 
@@ -191,7 +191,7 @@ def main():
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
         #print("before")
-        episode_branches.append(np.asarray([[np.mean(new_branches)]]))
+        #episode_branches.append(np.asarray([[np.mean(new_branches)]]))
         #print("after")
         #print(episode_branches)
         if args.gail:
@@ -263,7 +263,7 @@ def main():
                     np.max(episode_length),
                     step=total_num_steps)
 
-
+            print("Number of mean branches", np.mean(episode_branches))
             print(
                 "Updates {}, num timesteps {}, FPS {} \n Last {} training episodes: mean/median reward {:.1f}/{:.1f}, min/max reward {:.1f}/{:.1f}\n"
                 .format(j, total_num_steps,
