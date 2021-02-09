@@ -33,7 +33,7 @@ def main():
     if comet_loaded:
         experiment = Experiment(
             api_key="WRmA8ms9A78K85fLxcv8Nsld9",
-            project_name="growspaceenv-ppo",
+            project_name="growspace2021",
             workspace="yasmeenvh")
         experiment.set_name(args.comet)
         for key, value in vars(args).items():
@@ -105,7 +105,7 @@ def main():
             dataset=expert_dataset,
             batch_size=args.gail_batch_size,
             shuffle=True,
-            drop_last=drop_last)
+            drop_last=drop_last)-
 
     rollouts = RolloutStorage(args.num_steps, args.num_processes,
                               envs.observation_space.shape, envs.action_space,
@@ -118,6 +118,7 @@ def main():
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
     episode_branches = deque(maxlen=10)
+    episode_
     #new_branches = []
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
@@ -144,17 +145,25 @@ def main():
 
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
-
+            # misc = {"tips": tips, "target": self.target, "light": self.x1_light, "light width": LIGHT_WIDTH, "step": self.steps. "new_branches": self.new_branches}
 
             for info in infos:
-                #print(info.keys())
+                print("what is info:",info.keys())
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
                     #print("ep rewards:", episode_rewards)
 
                 if 'new_branches' in info.keys():
-                    new_branches.append(info['new_branches'])
+                    episode_branches.append(info['new_branches'])
+                    #print("what is new branches", new_branches)
+
+                if 'light width' in info.keys():
+                    episode_branches.append(info['new_branches'])
+                    #print("what is new branches", new_branches)
+
+                if 'light_move' in info.keys():
+                    episode_branches.append(info['new_branches'])
                     #print("what is new branches", new_branches)
 
                 if j == x:
@@ -233,11 +242,11 @@ def main():
                 experiment.log_metric(
                     "Reward Max", np.max(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
-                    "Number of Mean Branches", np.mean(episode_rewards), step=total_num_steps)
+                    "Number of Mean Branches", np.mean(episode_branches), step=total_num_steps)
                 experiment.log_metric(
-                    "Number of Min Branches", np.min(episode_rewards), step=total_num_steps)
+                    "Number of Min Branches", np.min(episode_branches), step=total_num_steps)
                 experiment.log_metric(
-                    "Number of Max Branches", np.max(episode_rewards), step=total_num_steps)
+                    "Number of Max Branches", np.max(episode_branches), step=total_num_steps)
                 experiment.log_metric(
                     "Episode Length Mean ",
                     np.mean(episode_length),
