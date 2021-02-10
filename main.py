@@ -117,8 +117,11 @@ def main():
 
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
-    episode_branches = deque(maxlen=10)
-    #episode_light = deque(maxlen=10)
+    episode_branches = deque(maxlen=50)
+    episode_light_width = deque(maxlen=50)
+    episode_light_move = deque(maxlen=50)
+    episode_success = deque(maxlen=50)
+    #episode_light_move = deque(maxlen=10)
     #new_branches = []
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
@@ -161,13 +164,17 @@ def main():
 
                     #print("what is new branches", new_branches)
 
-                if 'light width' in info.keys():
-                    episode_branches.append(info['new_branches'])
+                if 'light_width' in info.keys():
+                    episode_light_width.append(info['light_width'])
                     #print("what is new branches", new_branches)
 
                 if 'light_move' in info.keys():
-                    episode_branches.append(info['new_branches'])
+                    episode_light_move.append(info['light_move'])
                     #print("what is new branches", new_branches)
+
+                if 'success' in info.keys():
+                    episode_success.append(info['success'])
+                    # print("what is new branches", new_branches)
 
                 if j == x:
                     if 'img' in info.keys():
@@ -245,11 +252,21 @@ def main():
                 experiment.log_metric(
                     "Reward Max", np.max(episode_rewards), step=total_num_steps)
                 experiment.log_metric(
-                    "Number of Mean Branches", np.mean(episode_branches), step=total_num_steps)
+                    "Number of Mean New Branches", np.mean(episode_branches), step=total_num_steps)
                 experiment.log_metric(
-                    "Number of Min Branches", np.min(episode_branches), step=total_num_steps)
+                    "Number of Total New Branches", np.sum(episode_branches), step=total_num_steps)
                 experiment.log_metric(
-                    "Number of Max Branches", np.max(episode_branches), step=total_num_steps)
+                    "Number of Min New Branches", np.min(episode_branches), step=total_num_steps)
+                experiment.log_metric(
+                    "Number of Max New Branches", np.max(episode_branches), step=total_num_steps)
+                experiment.log_metric(
+                    "Number of Total Displacement of Light", np.sum(episode_light_move), step=total_num_steps)
+                experiment.log_metric(
+                    "Mean Displacement of Light", np.mean(episode_light_move), step=total_num_steps)
+                experiment.log_metric(
+                    "Mean Light Width", np.mean(episode_light_width), step=total_num_steps)
+                experiment.log_metric(
+                    "Number of Steps in Episode with Tree is as close as possible", np.sum(episode_success), step=total_num_steps)
                 experiment.log_metric(
                     "Episode Length Mean ",
                     np.mean(episode_length),
