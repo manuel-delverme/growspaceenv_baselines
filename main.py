@@ -280,7 +280,7 @@ def main():
                     np.max(episode_length),
                     step=total_num_steps)
 
-            print("Number of mean branches", np.mean(episode_branches))
+            #print("Number of mean branches", np.mean(episode_branches))
             print(
                 "Updates {}, num timesteps {}, FPS {} \n Last {} training episodes: mean/median reward {:.1f}/{:.1f}, min/max reward {:.1f}/{:.1f}\n"
                 .format(j, total_num_steps,
