@@ -117,10 +117,10 @@ def main():
 
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
-    episode_branches = deque(maxlen=50)
-    episode_light_width = deque(maxlen=50)
-    episode_light_move = deque(maxlen=50)
-    episode_success = deque(maxlen=50)
+    episode_branches = deque(maxlen=10)
+    episode_light_width = deque(maxlen=10)
+    episode_light_move = deque(maxlen=10)
+    episode_success = deque(maxlen=10)
     #episode_light_move = deque(maxlen=10)
     #new_branches = []
     episode_success_rate = deque(maxlen=100)
