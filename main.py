@@ -118,6 +118,8 @@ def main():
     episode_rewards = deque(maxlen=10)
     episode_length = deque(maxlen=10)
     episode_branches = deque(maxlen=10)
+    episode_branch1 = deque(maxlen=10)
+    episode_branch2 = deque(maxlen=10)
     episode_light_width = deque(maxlen=10)
     episode_light_move = deque(maxlen=10)
     episode_success = deque(maxlen=10)
@@ -163,6 +165,11 @@ def main():
                     # print("type of data:", type(info['new_branches']))
 
                     #print("what is new branches", new_branches)
+                if 'new_b1' in info.keys():
+                    episode_branch1.append(info['new_b1'])
+
+                if 'new_b2' in info.keys():
+                    episode_branch2.append(info['new_b2'])
 
                 if 'light_width' in info.keys():
                     episode_light_width.append(info['light_width'])
@@ -259,6 +266,12 @@ def main():
                     "Number of Min New Branches", np.min(episode_branches), step=total_num_steps)
                 experiment.log_metric(
                     "Number of Max New Branches", np.max(episode_branches), step=total_num_steps)
+
+                experiment.log_metric(
+                    "Number of Mean New Branches of Plant 1", np.mean(episode_branch1), step=total_num_steps)
+                experiment.log_metric(
+                    "Number of Mean New Branches of Plant 2", np.mean(episode_branch2), step=total_num_steps)
+
                 experiment.log_metric(
                     "Number of Total Displacement of Light", np.sum(episode_light_move), step=total_num_steps)
                 experiment.log_metric(
