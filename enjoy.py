@@ -20,21 +20,24 @@ parser.add_argument(
     type=int,
     default=10,
     help='log interval, one log per n updates (default: 10)')
+parser.add_argument("--model", help="path to saved model")
 parser.add_argument(
     '--env-name',
-    default="GrowSpaceEnv-Images-v0",
+    default="GrowSpaceEnv-ControlEasy-v0",
     help='environment to train on (default: PongNoFrameskip-v4)')
 parser.add_argument(
     '--custom-gym', default='growspace', help='The gym to load from')
 parser.add_argument(
     '--load-dir',
-    default='/home/y/Documents/growspaceenv_baselines/scripts/GrowSpaceEnv-Images-v0.pt',
+    default='/home/y/Documents/growspaceenv_baselines/scripts/GrowSpaceEnv-Control-v0.pt',
     help='directory to save agent logs (default: ./trained_models/ppo/)')
 parser.add_argument(
     '--non-det',
     action='store_true',
     default=False,
     help='whether to use a non-deterministic policy')
+#parser.add_argument("--non-det", action="store_true", default=False, help="whether to use a non-deterministic policy")
+parser.add_argument("--frame-stacc", type=int, default=4, help="how many past frames are kept in memory?")
 args = parser.parse_args()
 
 args.det = not args.non_det
@@ -45,7 +48,7 @@ env = make_vec_envs(
     1,
     None,
     None,
-    device='cpu',
+    device="cpu",
     custom_gym=args.custom_gym,
     allow_early_resets=False)
 
@@ -53,8 +56,7 @@ env = make_vec_envs(
 render_func = get_render_func(env)
 
 # We need to use the same statistics for normalization as used in training
-actor_critic, ob_rms = \
-            torch.load(args.load_dir, map_location='cpu')
+actor_critic, ob_rms = torch.load(args.load_dir, map_location='cpu')
 print("check1")
 
 vec_norm = get_vec_normalize(env)
