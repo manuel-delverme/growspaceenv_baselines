@@ -1,4 +1,8 @@
-comet_loaded = False
+try:
+    from comet_ml import Experiment
+    comet_loaded = True
+except ImportError:
+    comet_loaded = False
 import os
 import time
 from collections import deque
@@ -16,14 +20,26 @@ from evaluation import evaluate
 
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
 import cv2
-
-comet_loaded = False
-print(growspace)
-
+from comet_ml import Experiment
 
 def main():
     args = get_args()
-    experiment = None
+
+    if comet_loaded:
+        # experiment = Experiment(
+        #     api_key="WRmA8ms9A78K85fLxcv8Nsld9",
+        #     project_name="growspace2021",
+        #     workspace="yasmeenvh")
+        experiment = Experiment(
+            api_key="Bn4DMbX8kSPip8M4gL7ZWIvCa",
+            project_name="growspace2021",
+            workspace="ioneliabuzatu",
+        )
+        experiment.set_name(args.comet)
+        for key, value in vars(args).items():
+            experiment.log_parameter(key, value)
+    else:
+        experiment = None
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
 
@@ -98,6 +114,7 @@ def main():
         args.num_env_steps) // args.num_steps // args.num_processes
     # print("what are the num_updates",num_updates)
     x = 0
+    step_logger_counter = 0
     for j in range(num_updates):
 
         if args.use_linear_lr_decay:
@@ -115,6 +132,10 @@ def main():
 
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
+            
+            if experiment is not None:
+                experiment.log_metric("Episode Reward During Training", reward.item(), step=step_logger_counter)
+                step__logger_counter += 1
 
             for info in infos:
                 if 'episode' in info.keys():
