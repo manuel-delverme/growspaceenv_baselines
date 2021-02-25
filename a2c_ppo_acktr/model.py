@@ -183,6 +183,7 @@ class CNNBase(NNBase):
             #init_(nn.Conv2d(32, 64, 2, stride=1)), nn.ReLU(),Flatten(),
             init_(nn.Linear(32 * 7 * 7, hidden_size)), nn.ReLU())
 
+        # this run it if env=Pong
         # self.main = nn.Sequential(
         #     init_(nn.Conv2d(num_inputs, 32, 8, stride=4, padding=0)), nn.ReLU(),  # three channels for binary and rgb
         #     init_(nn.Conv2d(32, 64, 4, stride=2, padding=0)), nn.ReLU(),
