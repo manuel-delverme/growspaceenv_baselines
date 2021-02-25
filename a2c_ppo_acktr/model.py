@@ -176,19 +176,20 @@ class CNNBase(NNBase):
         print("number of inputs:", num_inputs)
 
         # ### first kernels are 8, 4, 3  now we try 6,4,3
-        # self.main = nn.Sequential(
-        #     init_(nn.Conv2d(num_inputs, 32, 6, stride=4, padding=0)), nn.ReLU(),  #three channels for binary and rgb
-        #     init_(nn.Conv2d(32, 64, 3, stride=2, padding=0)), nn.ReLU(),
-        #     init_(nn.Conv2d(64, 32, 3, stride=1, padding=0)), nn.ReLU(), Flatten(),
-        #     #init_(nn.Conv2d(32, 64, 2, stride=1)), nn.ReLU(),Flatten(),
-        #     init_(nn.Linear(32 * 7 * 7, hidden_size)), nn.ReLU())
-
         self.main = nn.Sequential(
-            init_(nn.Conv2d(num_inputs, 32, 8, stride=4, padding=0)), nn.ReLU(),  # three channels for binary and rgb
-            init_(nn.Conv2d(32, 64, 4, stride=2, padding=0)), nn.ReLU(),
+            init_(nn.Conv2d(num_inputs, 32, 6, stride=4, padding=0)), nn.ReLU(),  #three channels for binary and rgb
+            init_(nn.Conv2d(32, 64, 3, stride=2, padding=0)), nn.ReLU(),
             init_(nn.Conv2d(64, 32, 3, stride=1, padding=0)), nn.ReLU(), Flatten(),
-            # init_(nn.Conv2d(32, 64, 2, stride=1)), nn.ReLU(),Flatten(),
+            #init_(nn.Conv2d(32, 64, 2, stride=1)), nn.ReLU(),Flatten(),
             init_(nn.Linear(32 * 7 * 7, hidden_size)), nn.ReLU())
+
+        # this run it if env=Pong
+        # self.main = nn.Sequential(
+        #     init_(nn.Conv2d(num_inputs, 32, 8, stride=4, padding=0)), nn.ReLU(),  # three channels for binary and rgb
+        #     init_(nn.Conv2d(32, 64, 4, stride=2, padding=0)), nn.ReLU(),
+        #     init_(nn.Conv2d(64, 32, 3, stride=1, padding=0)), nn.ReLU(), Flatten(),
+            # init_(nn.Conv2d(32, 64, 2, stride=1)), nn.ReLU(),Flatten(),
+            # init_(nn.Linear(32 * 22 * 16, hidden_size)), nn.ReLU())
 
         init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
                                constant_(x, 0))
