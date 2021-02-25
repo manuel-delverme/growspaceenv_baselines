@@ -169,21 +169,6 @@ def main():
         #episode_branches.append(np.asarray([[np.mean(new_branches)]]))
         #print("after")
         #print(episode_branches)
-        if args.gail:
-            if j >= 10:
-                envs.venv.eval()
-
-            gail_epoch = args.gail_epoch
-            if j < 10:
-                gail_epoch = 100  # Warm up
-            for _ in range(gail_epoch):
-                discr.update(gail_train_loader, rollouts,
-                             utils.get_vec_normalize(envs)._obfilt)
-
-            for step in range(args.num_steps):
-                rollouts.rewards[step] = discr.predict_reward(
-                    rollouts.obs[step], rollouts.actions[step], args.gamma,
-                    rollouts.masks[step])
 
         rollouts.compute_returns(next_value, args.use_gae, args.gamma,
                                  args.gae_lambda, args.use_proper_time_limits)
