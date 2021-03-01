@@ -33,7 +33,7 @@ def main():
     if comet_loaded:
         experiment = Experiment(
             api_key="WRmA8ms9A78K85fLxcv8Nsld9",
-            project_name="growspace2021",
+            project_name="growspace-tests",
             workspace="yasmeenvh")
         experiment.set_name(args.comet)
         for key, value in vars(args).items():
