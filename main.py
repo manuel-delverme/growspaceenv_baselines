@@ -26,15 +26,8 @@ def main():
     args = get_args()
 
     if comet_loaded:
-        # experiment = Experiment(
-        #     api_key="WRmA8ms9A78K85fLxcv8Nsld9",
-        #     project_name="growspace2021",
-        #     workspace="yasmeenvh")
         experiment = Experiment(
-            api_key="Bn4DMbX8kSPip8M4gL7ZWIvCa",
-            project_name="growspace2021",
-            workspace="ioneliabuzatu",
-        )
+            api_key="WRmA8ms9A78K85fLxcv8Nsld9")
         experiment.set_name(args.comet)
         for key, value in vars(args).items():
             experiment.log_parameter(key, value)
@@ -55,7 +48,7 @@ def main():
     torch.set_num_threads(1)
     device = torch.device("cuda:0" if args.cuda else "cpu")
 
-    envs = make_ec_envs(args.env_name, args.seed, args.num_processes,
+    envs = make_vec_envs(args.env_name, args.seed, args.num_processes,
                          args.gamma, args.log_dir, device, False, args.custom_gym)
 
     actor_critic = Policy(
