@@ -125,7 +125,7 @@ def main():
 
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
-            
+
             if experiment is not None:
                 experiment.log_metric("Episode Reward During Training", reward.item(), step=step_logger_counter)
                 step__logger_counter += 1
@@ -182,6 +182,8 @@ def main():
         #print("before")
         #episode_branches.append(np.asarray([[np.mean(new_branches)]]))
         #print("after")
+        #print(episode_branches)
+
         rollouts.compute_returns(next_value, args.use_gae, args.gamma,
                                  args.gae_lambda, args.use_proper_time_limits)
 
