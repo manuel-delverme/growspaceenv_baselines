@@ -17,6 +17,7 @@ from a2c_ppo_acktr.envs import make_vec_envs
 from a2c_ppo_acktr.model import Policy
 from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
+import getpass
 
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
 import cv2
@@ -27,7 +28,10 @@ def main():
 
     if comet_loaded:
         experiment = Experiment(
-            api_key="WRmA8ms9A78K85fLxcv8Nsld9")
+            api_key="WRmA8ms9A78K85fLxcv8Nsld9",
+            project_name="growspace2021",
+            workspace="yasmeenvh")
+        experiment.add_tag(getpass.getuser())
         experiment.set_name(args.comet)
         for key, value in vars(args).items():
             experiment.log_parameter(key, value)
@@ -128,7 +132,7 @@ def main():
 
             if experiment is not None:
                 experiment.log_metric("Episode Reward During Training", reward.item(), step=step_logger_counter)
-                step__logger_counter += 1
+                step_logger_counter += 1
 
             for info in infos:
                 if 'episode' in info.keys():
