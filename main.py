@@ -24,6 +24,7 @@ import getpass
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
 import cv2
 from comet_ml import Experiment
+from tqdm import tqdm
 
 
 def main():
@@ -121,7 +122,7 @@ def main():
     # print("what are the num_updates",num_updates)
     x = 0
     step_logger_counter = 0
-    for j in range(num_updates):
+    for j in tqdm(range(num_updates)):
 
         if args.use_linear_lr_decay:
             # decrease learning rate linearly
