@@ -7,6 +7,7 @@ except ImportError:
 import os
 import time
 from collections import deque
+import growspace
 
 import numpy as np
 import torch
@@ -87,9 +88,11 @@ def main():
         agent = algo.A2C_ACKTR(
             actor_critic, args.value_loss_coef, args.entropy_coef, acktr=True)
 
-    elif args.alog == 'ddpg':
-        # agent =
-        pass
+    elif args.algo == 'ddpg':
+        from stable_baselines import DDPG
+        # param_noise = None
+        # action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
+        agent = DDPG("MlpPolicy", envs, verbose=1) #, param_noise=param_noise, action_noise=action_noise) # , tensorboard_log=tensorboard_log)
 
     rollouts = RolloutStorage(args.num_steps, args.num_processes,
                               envs.observation_space.shape, envs.action_space,
