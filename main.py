@@ -1,5 +1,6 @@
 try:
     from comet_ml import Experiment
+
     comet_loaded = True
 except ImportError:
     comet_loaded = False
@@ -22,6 +23,7 @@ import getpass
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
 import cv2
 from comet_ml import Experiment
+
 
 def main():
     args = get_args()
@@ -85,6 +87,10 @@ def main():
         agent = algo.A2C_ACKTR(
             actor_critic, args.value_loss_coef, args.entropy_coef, acktr=True)
 
+    elif args.alog == 'ddpg':
+        # agent =
+        pass
+
     rollouts = RolloutStorage(args.num_steps, args.num_processes,
                               envs.observation_space.shape, envs.action_space,
                               actor_critic.recurrent_hidden_state_size)
@@ -130,14 +136,14 @@ def main():
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
 
-            if experiment is not None:
-                experiment.log_metric("Episode Reward During Training", reward.item(), step=step_logger_counter)
-                step_logger_counter += 1
-
             for info in infos:
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
+
+                    if experiment is not None:
+                        experiment.log_metric("Episode Reward", info['episode']['r'].item(), step=step_logger_counter)
+                        step_logger_counter += 1
 
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
@@ -183,10 +189,10 @@ def main():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
-        #print("before")
-        #episode_branches.append(np.asarray([[np.mean(new_branches)]]))
-        #print("after")
-        #print(episode_branches)
+        # print("before")
+        # episode_branches.append(np.asarray([[np.mean(new_branches)]]))
+        # print("after")
+        # print(episode_branches)
 
         rollouts.compute_returns(next_value, args.use_gae, args.gamma,
                                  args.gae_lambda, args.use_proper_time_limits)
@@ -194,7 +200,6 @@ def main():
         value_loss, action_loss, dist_entropy = agent.update(rollouts)
 
         rollouts.after_update()
-
 
         # save for every interval-th episode or for the last epoch
         if (j % args.save_interval == 0
@@ -222,13 +227,17 @@ def main():
                 experiment.log_metric("Number of Min New Branches", np.min(episode_branches), step=total_num_steps)
                 experiment.log_metric("Number of Max New Branches", np.max(episode_branches), step=total_num_steps)
 
-                experiment.log_metric("Number of Mean New Branches of Plant 1", np.mean(episode_branch1), step=total_num_steps)
-                experiment.log_metric("Number of Mean New Branches of Plant 2", np.mean(episode_branch2), step=total_num_steps)
+                experiment.log_metric("Number of Mean New Branches of Plant 1", np.mean(episode_branch1),
+                                      step=total_num_steps)
+                experiment.log_metric("Number of Mean New Branches of Plant 2", np.mean(episode_branch2),
+                                      step=total_num_steps)
 
-                experiment.log_metric("Number of Total Displacement of Light", np.sum(episode_light_move), step=total_num_steps)
+                experiment.log_metric("Number of Total Displacement of Light", np.sum(episode_light_move),
+                                      step=total_num_steps)
                 experiment.log_metric("Mean Displacement of Light", np.mean(episode_light_move), step=total_num_steps)
                 experiment.log_metric("Mean Light Width", np.mean(episode_light_width), step=total_num_steps)
-                experiment.log_metric("Number of Steps in Episode with Tree is as close as possible", np.sum(episode_success), step=total_num_steps)
+                experiment.log_metric("Number of Steps in Episode with Tree is as close as possible",
+                                      np.sum(episode_success), step=total_num_steps)
                 experiment.log_metric("Episode Length Mean ", np.mean(episode_length), step=total_num_steps);
                 experiment.log_metric("Episode Length Min",
                                       np.min(episode_length), step=total_num_steps)
