@@ -4,27 +4,26 @@ try:
     comet_loaded = True
 except ImportError:
     comet_loaded = False
+import getpass
 import os
 import time
 from collections import deque
-import growspace
 
+import cv2
 import numpy as np
 import torch
+from comet_ml import Experiment
+from tqdm import tqdm
 
-import growspace
 from a2c_ppo_acktr import algo, utils
 from a2c_ppo_acktr.arguments import get_args
 from a2c_ppo_acktr.envs import make_vec_envs
 from a2c_ppo_acktr.model import Policy
 from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
-import getpass
+from scripts.movie_maker import create_render_for_comet
 
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
-import cv2
-from comet_ml import Experiment
-from tqdm import tqdm
 
 
 def main():
@@ -35,6 +34,7 @@ def main():
             api_key="WRmA8ms9A78K85fLxcv8Nsld9",
             project_name="growspace2021",
             workspace="yasmeenvh")
+
         experiment.add_tag(getpass.getuser())
         experiment.set_name(args.comet)
         for key, value in vars(args).items():
@@ -62,7 +62,8 @@ def main():
     actor_critic = Policy(
         envs.observation_space.shape,
         envs.action_space,
-        base_kwargs={'recurrent': args.recurrent_policy})
+        base_kwargs={'recurrent': args.recurrent_policy}
+    )
     actor_critic.to(device)
 
     if args.algo == 'a2c':
@@ -73,7 +74,8 @@ def main():
             lr=args.lr,
             eps=args.eps,
             alpha=args.alpha,
-            max_grad_norm=args.max_grad_norm)
+            max_grad_norm=args.max_grad_norm
+        )
     elif args.algo == 'ppo':
         agent = algo.PPO(
             actor_critic,
@@ -84,20 +86,18 @@ def main():
             args.entropy_coef,
             lr=args.lr,
             eps=args.eps,
-            max_grad_norm=args.max_grad_norm)
+            max_grad_norm=args.max_grad_norm
+        )
     elif args.algo == 'acktr':
-        agent = algo.A2C_ACKTR(
-            actor_critic, args.value_loss_coef, args.entropy_coef, acktr=True)
+        agent = algo.A2C_ACKTR(actor_critic, args.value_loss_coef, args.entropy_coef, acktr=True)
 
-    elif args.algo == 'ddpg':
-        from stable_baselines import DDPG
-        # param_noise = None
-        # action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
-        agent = DDPG("MlpPolicy", envs, verbose=1) #, param_noise=param_noise, action_noise=action_noise) # , tensorboard_log=tensorboard_log)
-
-    rollouts = RolloutStorage(args.num_steps, args.num_processes,
-                              envs.observation_space.shape, envs.action_space,
-                              actor_critic.recurrent_hidden_state_size)
+    rollouts = RolloutStorage(
+        args.num_steps,
+        args.num_processes,
+        envs.observation_space.shape,
+        envs.action_space,
+        actor_critic.recurrent_hidden_state_size
+    )
 
     obs = envs.reset()
     rollouts.obs[0].copy_(obs)
@@ -117,9 +117,7 @@ def main():
     episode_total = 0
 
     start = time.time()
-    num_updates = int(
-        args.num_env_steps) // args.num_steps // args.num_processes
-    # print("what are the num_updates",num_updates)
+    num_updates = int(args.num_env_steps) // args.num_steps // args.num_processes
     x = 0
     step_logger_counter = 0
     for j in tqdm(range(num_updates)):
@@ -193,10 +191,6 @@ def main():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
-        # print("before")
-        # episode_branches.append(np.asarray([[np.mean(new_branches)]]))
-        # print("after")
-        # print(episode_branches)
 
         rollouts.compute_returns(next_value, args.use_gae, args.gamma,
                                  args.gae_lambda, args.use_proper_time_limits)
@@ -247,9 +241,10 @@ def main():
                                       np.min(episode_length), step=total_num_steps)
                 experiment.log_metric("Episode Length Max", np.max(episode_length), step=total_num_steps)
 
-            # print("Number of mean branches", np.mean(episode_branches))
+                gif, gif_filepath = create_render_for_comet(args, actor_critic)
+                experiment.log_asset(gif_filepath)
 
-        if (args.eval_interval is not None and len(episode_rewards) > 1 and j % args.eval_interval == 0):
+        if args.eval_interval is not None and len(episode_rewards) > 1 and j % args.eval_interval == 0:
             ob_rms = utils.get_vec_normalize(envs).ob_rms
             evaluate(actor_critic, ob_rms, args.env_name, args.seed, args.num_processes, eval_log_dir, device)
 
