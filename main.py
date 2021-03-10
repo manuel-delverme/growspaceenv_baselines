@@ -1,3 +1,4 @@
+import logging
 try:
     from comet_ml import Experiment
 
@@ -12,6 +13,7 @@ from collections import deque
 import cv2
 import numpy as np
 import torch
+import torch.backends.cudnn
 from comet_ml import Experiment
 from tqdm import tqdm
 
@@ -31,9 +33,8 @@ def main():
 
     if comet_loaded:
         experiment = Experiment(
-            api_key="WRmA8ms9A78K85fLxcv8Nsld9",
-            project_name="growspace2021",
-            workspace="yasmeenvh")
+            api_key="WRmA8ms9A78K85fLxcv8Nsld9", project_name="growspace2021", workspace="yasmeenvh"
+        )
 
         experiment.add_tag(getpass.getuser())
         experiment.set_name(args.comet)
@@ -41,6 +42,7 @@ def main():
             experiment.log_parameter(key, value)
     else:
         experiment = None
+
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
 
@@ -87,7 +89,7 @@ def main():
             lr=args.lr,
             eps=args.eps,
             max_grad_norm=args.max_grad_norm,
-            optimizer="sgd"
+            optimizer="adam"
         )
     elif args.algo == 'acktr':
         agent = algo.A2C_ACKTR(actor_critic, args.value_loss_coef, args.entropy_coef, acktr=True)
@@ -104,15 +106,17 @@ def main():
     rollouts.obs[0].copy_(obs)
     rollouts.to(device)
 
-    episode_rewards = deque(maxlen=10)
-    episode_length = deque(maxlen=10)
-    episode_branches = deque(maxlen=10)
-    episode_branch1 = deque(maxlen=10)
-    episode_branch2 = deque(maxlen=10)
-    episode_light_width = deque(maxlen=10)
-    episode_light_move = deque(maxlen=10)
-    episode_success = deque(maxlen=10)
-    # episode_light_move = deque(maxlen=10)
+    episode_rewards = []
+    episode_length = []
+    episode_branches = []
+    episode_branch1 = []
+    episode_branch2 = []
+    episode_light_width = []
+    episode_light_move = []
+    episode_success = []
+    episode_light_position = []
+    episode_beam_width = []
+
     # new_branches = []
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
@@ -136,8 +140,13 @@ def main():
                     rollouts.obs[step], rollouts.recurrent_hidden_states[step],
                     rollouts.masks[step])
 
+                # if experiment is not None:
+                #     experiment.log_histogram_3d(action, name="Actions", step=step_logger_counter)
+
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
+            episode_light_position.append(action[:, 0])
+            episode_beam_width.append(action[:, 1])
 
             for info in infos:
                 if 'episode' in info.keys():
@@ -150,10 +159,7 @@ def main():
 
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
-                    # print("what is in new branches", info['new_branches'])
-                    # print("type of data:", type(info['new_branches']))
 
-                    # print("what is new branches", new_branches)
                 if 'new_b1' in info.keys():
                     episode_branch1.append(info['new_b1'])
 
@@ -162,15 +168,12 @@ def main():
 
                 if 'light_width' in info.keys():
                     episode_light_width.append(info['light_width'])
-                    # print("what is new branches", new_branches)
 
                 if 'light_move' in info.keys():
                     episode_light_move.append(info['light_move'])
-                    # print("what is new branches", new_branches)
 
                 if 'success' in info.keys():
                     episode_success.append(info['success'])
-                    # print("what is new branches", new_branches)
 
                 if j == x:
                     if 'img' in info.keys():
@@ -185,16 +188,14 @@ def main():
             bad_masks = torch.FloatTensor(
                 [[0.0] if 'bad_transition' in info.keys() else [1.0]
                  for info in infos])
-            rollouts.insert(obs, recurrent_hidden_states, action,
-                            action_log_prob, value, reward, masks, bad_masks)
+            rollouts.insert(obs, recurrent_hidden_states, action, action_log_prob, value, reward, masks, bad_masks)
 
         with torch.no_grad():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
 
-        rollouts.compute_returns(next_value, args.use_gae, args.gamma,
-                                 args.gae_lambda, args.use_proper_time_limits)
+        rollouts.compute_returns(next_value, args.use_gae, args.gamma, args.gae_lambda, args.use_proper_time_limits)
 
         value_loss, action_loss, dist_entropy = agent.update(rollouts)
 
@@ -206,8 +207,8 @@ def main():
             save_path = os.path.join(args.save_dir, args.algo)
             try:
                 os.makedirs(save_path)
-            except OSError:
-                pass
+            except OSError as error:
+                logging.warning(f"exception: {error}")
 
             torch.save([
                 actor_critic,
@@ -243,9 +244,31 @@ def main():
                 experiment.log_metric("Episode Length Max", np.max(episode_length), step=total_num_steps)
                 experiment.log_metric("Entropy", dist_entropy, step=total_num_steps)
 
+                experiment.log_histogram_3d(name="Displacement of Light Position", values=episode_light_position,
+                                            step=total_num_steps)
+                experiment.log_histogram_3d(name="Displacement Beam Width", values=episode_beam_width,
+                                            step=total_num_steps)
+
+                experiment.log_histogram_3d(name="Displacement of Light Move", values=episode_light_move,
+                                            step=total_num_steps)
+                experiment.log_histogram_3d(name="Displacement Light Width", values=episode_light_width,
+                                            step=total_num_steps)
+
                 gif, gif_filepath = create_render_for_comet(args, actor_critic)
                 experiment.log_asset(gif_filepath)
 
+            episode_rewards.clear()
+            episode_length.clear()
+            episode_branches.clear()
+            episode_branch1.clear()
+            episode_branch2.clear()
+            episode_light_width.clear()
+            episode_light_move.clear()
+            episode_success.clear()
+            episode_light_position.clear()
+            episode_light_width.clear()
+
+        # new_branches = []
         if args.eval_interval is not None and len(episode_rewards) > 1 and j % args.eval_interval == 0:
             ob_rms = utils.get_vec_normalize(envs).ob_rms
             evaluate(actor_critic, ob_rms, args.env_name, args.seed, args.num_processes, eval_log_dir, device)
