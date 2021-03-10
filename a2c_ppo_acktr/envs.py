@@ -162,7 +162,11 @@ class VecPyTorch(VecEnvWrapper):
         self.device = device
         # TODO: Fix data types
 
+    def seed(self, seed=None):
+        return [np.random.seed(seed)]
+
     def reset(self):
+        self.seed(seed=123)
         obs = self.venv.reset()
         obs = torch.from_numpy(obs).float().to(self.device)
         return obs
