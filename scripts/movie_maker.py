@@ -7,13 +7,13 @@ from matplotlib import animation
 from a2c_ppo_acktr.envs import make_vec_envs
 
 
-def create_render_for_comet(args, actor_critic):
+def create_render_for_comet(args, actor_critic, num_processes=1):
     device = torch.device("cuda:0" if args.cuda else "cpu")
 
     env_gym = make_vec_envs(
         "GrowSpaceEnv-Continuous-v0",
         args.seed,
-        args.num_processes,
+        num_processes,
         args.gamma,
         args.log_dir,
         device,
@@ -23,7 +23,7 @@ def create_render_for_comet(args, actor_critic):
 
     frames = []
     obs = env_gym.reset()
-    eval_recurrent_hidden_states = torch.zeros(args.num_processes, actor_critic.recurrent_hidden_state_size,
+    eval_recurrent_hidden_states = torch.zeros(num_processes, actor_critic.recurrent_hidden_state_size,
                                                device=device)
     eval_masks = torch.zeros(args.num_processes, 1, device=device)
     for _ in range(150):
@@ -39,7 +39,7 @@ def create_render_for_comet(args, actor_critic):
         obs, rewards, dones, info = env_gym.step(action)
         if dones:
             break
-        env_gym.render()
+        # env_gym.render()
 
     env_gym.close()
 
