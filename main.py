@@ -86,7 +86,8 @@ def main():
             args.entropy_coef,
             lr=args.lr,
             eps=args.eps,
-            max_grad_norm=args.max_grad_norm
+            max_grad_norm=args.max_grad_norm,
+            optimizer="sgd"
         )
     elif args.algo == 'acktr':
         agent = algo.A2C_ACKTR(actor_critic, args.value_loss_coef, args.entropy_coef, acktr=True)
@@ -240,6 +241,7 @@ def main():
                 experiment.log_metric("Episode Length Min",
                                       np.min(episode_length), step=total_num_steps)
                 experiment.log_metric("Episode Length Max", np.max(episode_length), step=total_num_steps)
+                experiment.log_metric("Entropy", dist_entropy, step=total_num_steps)
 
                 gif, gif_filepath = create_render_for_comet(args, actor_critic)
                 experiment.log_asset(gif_filepath)
