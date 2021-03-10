@@ -133,8 +133,8 @@ def main():
         args.num_env_steps) // args.num_steps // args.num_processes
     #print("what are the num_updates",num_updates)
     x = 0
-    s = 0
-    av_ep_move = []
+    #s = 0
+    #av_ep_move = []
     for j in range(num_updates):
 
         if args.use_linear_lr_decay:
@@ -144,9 +144,9 @@ def main():
                 agent.optimizer.lr if args.algo == "acktr" else args.lr)
         #new_branches = []
         for step in range(args.num_steps):
-            if s == 0:
-                light_move_ep = []
-            s +=1
+            #if s == 0:
+                #light_move_ep = []
+            #s +=1
             # Sample actions
             with torch.no_grad():
                 value, action, action_log_prob, recurrent_hidden_states = actor_critic.act(
@@ -182,7 +182,7 @@ def main():
 
                 if 'light_move' in info.keys():
                     episode_light_move.append(info['light_move'])
-                    light_move_ep.append(info['light_move'])
+                    #light_move_ep.append(info['light_move'])
                     #print("what is new branches", new_branches)
 
                 if 'success' in info.keys():
@@ -196,10 +196,10 @@ def main():
                         cv2.imwrite(os.path.join(path, 'step' + str(step) + '.png'), img)
                     x += 1000
 
-            if s == 50:
-                av = np.mean(light_move_ep)
-                av_ep_move.append(av)
-                s = 0
+            #if s == 50:
+                #av = np.mean(light_move_ep)
+                #av_ep_move.append(av)
+                #s = 0
 
             # If done then clean the history of observations.
             masks = torch.FloatTensor(
@@ -287,7 +287,7 @@ def main():
                 experiment.log_metric(
                     "Mean Displacement of Light", np.mean(episode_light_move), step=total_num_steps)
                 experiment.log_metric(
-                    "Mean Light Width", av_ep_move)  #try out per episode plotting 
+                    "Mean Light Width", np.mean(episode_light_width), step=total_num_steps)
                 experiment.log_metric(
                     "Number of Steps in Episode with Tree is as close as possible", np.sum(episode_success), step=total_num_steps)
                 experiment.log_metric(
