@@ -40,8 +40,8 @@ def main():
             #experiment.log_parameter(key, value)
     #else:
         #experiment = None
-    wandb.init(project='ppo', entity='growspace')   
-    config = wandb.config(args)
+    wandb.init(project='ppo', entity='growspace')
+    wandb.config(args)
 
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
