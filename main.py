@@ -17,6 +17,10 @@ import torch.backends.cudnn
 from comet_ml import Experiment
 from tqdm import tqdm
 
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+import wandb
 from a2c_ppo_acktr import algo, utils
 from a2c_ppo_acktr.arguments import get_args
 from a2c_ppo_acktr.envs import make_vec_envs
@@ -31,17 +35,8 @@ os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
 def main():
     args = get_args()
 
-    if comet_loaded:
-        experiment = Experiment(
-            api_key="WRmA8ms9A78K85fLxcv8Nsld9", project_name="growspace2021", workspace="yasmeenvh"
-        )
-
-        experiment.add_tag(getpass.getuser())
-        experiment.set_name(args.comet)
-        for key, value in vars(args).items():
-            experiment.log_parameter(key, value)
-    else:
-        experiment = None
+    wandb.init(project='ppo', entity='growspace')
+    #wandb.config()
 
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -125,8 +120,9 @@ def main():
     num_updates = int(args.num_env_steps) // args.num_steps // args.num_processes
     x = 0
     step_logger_counter = 0
-    for j in tqdm(range(num_updates)):
-
+    #s = 0
+    #av_ep_move = []
+    for j in range(num_updates):
         if args.use_linear_lr_decay:
             # decrease learning rate linearly
             utils.update_linear_schedule(
@@ -134,6 +130,9 @@ def main():
                 agent.optimizer.lr if args.algo == "acktr" else args.lr)
         # new_branches = []
         for step in range(args.num_steps):
+            #if s == 0:
+                #light_move_ep = []
+            #s +=1
             # Sample actions
             with torch.no_grad():
                 value, action, action_log_prob, recurrent_hidden_states = actor_critic.act(
@@ -171,6 +170,7 @@ def main():
 
                 if 'light_move' in info.keys():
                     episode_light_move.append(info['light_move'])
+                    #light_move_ep.append(info['light_move'])
 
                 if 'success' in info.keys():
                     episode_success.append(info['success'])
@@ -218,6 +218,8 @@ def main():
         if j % args.log_interval == 0 and len(episode_rewards) > 1:
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
+
+            # TODO
             if experiment is not None:
                 experiment.log_metric("Reward Mean", np.mean(episode_rewards), step=total_num_steps)
                 experiment.log_metric("Reward Min", np.min(episode_rewards), step=total_num_steps)
@@ -270,6 +272,30 @@ def main():
 
         # new_branches = []
         if args.eval_interval is not None and len(episode_rewards) > 1 and j % args.eval_interval == 0:
+            wandb.log({"Reward Min":np.min(episode_rewards)}, step=total_num_steps)
+            wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
+            wandb.log({"Reward Max": np.max(episode_rewards)}, step=total_num_steps)
+            wandb.log({"Number of Mean New Branches": np.mean(episode_branches)}, step=total_num_steps)
+            wandb.log({"Number of Max New Branches": np.max(episode_branches)}, step=total_num_steps)
+            wandb.log({"Number of Min New Branches": np.min(episode_branches)}, step=total_num_steps)
+            wandb.log({"Number of Mean New Branches of Plant 1": np.mean(episode_branch1)}, step = total_num_steps)
+            wandb.log({"Number of Mean New Branches of Plant 2": np.mean(episode_branch2)}, step=total_num_steps)
+            wandb.log({"Number of Total Displacement of Light": np.sum(episode_light_move)}, step=total_num_steps)
+            wandb.log({"Mean Light Displacement": np.mean(episode_light_move)}, step=total_num_steps)
+            wandb.log({"Mean Light Width": np.mean(episode_light_width)}, step=total_num_steps)
+            wandb.log({"Number of Steps in Episode with Tree is as close as possible": np.sum(episode_success)},step=total_num_steps)
+
+            print(
+                "Updates {}, num timesteps {}, FPS {} \n Last {} training episodes: mean/median reward {:.1f}/{:.1f}, min/max reward {:.1f}/{:.1f}\n"
+                .format(j, total_num_steps,
+                        int(total_num_steps / (end - start)),
+                        len(episode_rewards), np.mean(episode_rewards),
+                        np.median(episode_rewards), np.min(episode_rewards),
+                        np.max(episode_rewards), dist_entropy, value_loss,
+                        action_loss))
+
+        if (args.eval_interval is not None and len(episode_rewards) > 1
+                and j % args.eval_interval == 0):
             ob_rms = utils.get_vec_normalize(envs).ob_rms
             evaluate(actor_critic, ob_rms, args.env_name, args.seed, args.num_processes, eval_log_dir, device)
 
