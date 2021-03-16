@@ -104,3 +104,14 @@ trained_models/
 .fuse_hidden*
 gifs/
 .idea/
+
+# lia stuff
+PPO2*
+please_name_this_gif.gif
+ppo-stable-tensorboard
+recording
+*.zip
+videos
+wandb
+other_experiments.py
+train_with_ppo_stable_baselines.py

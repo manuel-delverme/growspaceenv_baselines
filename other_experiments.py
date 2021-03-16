@@ -1,13 +1,10 @@
+# noinspection PyUnresolvedReferences
 import growspace
-from matplotlib import animation
+import gym
 import matplotlib.pyplot as plt
-import gym
-import gym
-import numpy as np
 import torch
-from stable_baselines import DDPG
+from matplotlib import animation
 from stable_baselines import TRPO
-from stable_baselines.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise, AdaptiveParamNoiseSpec
 from stable_baselines.common.policies import MlpPolicy
 
 from a2c_ppo_acktr.envs import make_vec_envs
@@ -139,6 +136,6 @@ def render_to_gif():
 
 if __name__ == '__main__':
     # render_growspace_with_ppo()
-    # render_growspace_with_trpo()
+    render_growspace_with_trpo()
     # render_to_gif()
-    render_growspace_with_ddpg()
+    # render_growspace_with_ddpg()

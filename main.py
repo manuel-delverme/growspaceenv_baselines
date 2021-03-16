@@ -145,8 +145,8 @@ def main():
 
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
-            episode_light_position.append(action[:, 0])
-            episode_beam_width.append(action[:, 1])
+            # episode_light_position.append(action[:, 0])
+            # episode_beam_width.append(action[:, 1])
 
             for info in infos:
                 if 'episode' in info.keys():
