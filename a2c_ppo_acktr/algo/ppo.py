@@ -5,17 +5,20 @@ import torch.optim as optim
 
 
 class PPO():
-    def __init__(self,
-                 actor_critic,
-                 clip_param,
-                 ppo_epoch,
-                 num_mini_batch,
-                 value_loss_coef,
-                 entropy_coef,
-                 lr=None,
-                 eps=None,
-                 max_grad_norm=None,
-                 use_clipped_value_loss=True):
+    def __init__(
+            self,
+            actor_critic,
+            clip_param,
+            ppo_epoch,
+            num_mini_batch,
+            value_loss_coef,
+            entropy_coef,
+            lr=None,
+            eps=None,
+            max_grad_norm=None,
+            use_clipped_value_loss=True,
+            optimizer="adam",
+    ):
 
         self.actor_critic = actor_critic
 
@@ -29,7 +32,10 @@ class PPO():
         self.max_grad_norm = max_grad_norm
         self.use_clipped_value_loss = use_clipped_value_loss
 
-        self.optimizer = optim.Adam(actor_critic.parameters(), lr=lr, eps=eps)
+        if optimizer == "adam":
+            self.optimizer = optim.Adam(actor_critic.parameters(), lr=lr, eps=eps)
+        elif optimizer == "sgd":
+            self.optimizer = optim.SGD(actor_critic.parameters(), lr=lr, momentum=0.90)
 
     def update(self, rollouts):
         advantages = rollouts.returns[:-1] - rollouts.value_preds[:-1]

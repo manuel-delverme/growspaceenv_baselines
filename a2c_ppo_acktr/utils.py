@@ -1,7 +1,6 @@
 import glob
 import os
 
-import torch
 import torch.nn as nn
 
 from a2c_ppo_acktr.envs import VecNormalize
@@ -63,3 +62,21 @@ def cleanup_log_dir(log_dir):
         files = glob.glob(os.path.join(log_dir, '*.monitor.csv'))
         for f in files:
             os.remove(f)
+
+
+def init_layer_in_actor(module):
+    return init(module, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), nn.init.calculate_gain('relu'))
+
+
+def init_critic_layer(module):
+    return init(module, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0))
+
+
+def calculate_next_feature_map_size(layers: list, feature_map_size: int):
+    """ Initially the feature_map_size is the width of the input """
+    for layer in layers:
+        padding = layer.padding[0]
+        stride = layer.stride[0]
+        kernel = layer.kernel_size[0]
+        feature_map_size = (feature_map_size - kernel + 2 * padding) / stride + 1
+    return int(feature_map_size)
