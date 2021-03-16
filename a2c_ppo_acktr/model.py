@@ -172,7 +172,11 @@ class NNBase(nn.Module):
 
 class CNNBase(NNBase):
     def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=6):
-        """ At first kernels were 8, 4, 3  now we try 6,4,3 """
+        """
+        At first kernels were 8, 4, 3  now we try 6,4,3
+       Used those formulas to calculate the feature map in the linear layer:
+        @https://datascience.stackexchange.com/questions/40906/determining-size-of-fc-layer-after-conv-layer-in-pytorch
+        """
         super(CNNBase, self).__init__(recurrent, hidden_size, hidden_size)
 
         assert len(obs_shape) == 3
@@ -180,13 +184,16 @@ class CNNBase(NNBase):
         print("number of inputs:", num_inputs)
 
         self.cnn_layer1 = init_layer_in_actor(nn.Conv2d(num_inputs, num_feature_maps, kernel_size, stride=4, padding=0))
-        self.cnn_layer2 = init_layer_in_actor(nn.Conv2d(num_feature_maps, num_feature_maps * 2, int(kernel_size / 2), stride=2, padding=0))
-        self.cnn_layer3 = init_layer_in_actor(nn.Conv2d(num_feature_maps * 2, num_feature_maps, int(kernel_size / 2), stride=1, padding=0))
+        self.cnn_layer2 = init_layer_in_actor(
+            nn.Conv2d(num_feature_maps, num_feature_maps * 2, int(kernel_size / 2), stride=2, padding=0))
+        self.cnn_layer3 = init_layer_in_actor(
+            nn.Conv2d(num_feature_maps * 2, num_feature_maps, int(kernel_size / 2), stride=1, padding=0))
 
         feature_map_for_linear_layer = calculate_next_feature_map_size(
             [self.cnn_layer1, self.cnn_layer2, self.cnn_layer3], input_width
         )
-        self.linear_layer = init_layer_in_actor(nn.Linear(num_feature_maps * feature_map_for_linear_layer ** 2, hidden_size))
+        self.linear_layer = init_layer_in_actor(
+            nn.Linear(num_feature_maps * feature_map_for_linear_layer ** 2, hidden_size))
         self.activation = nn.ReLU()
 
         self.critic_linear = init_critic_layer(nn.Linear(hidden_size, 1))
