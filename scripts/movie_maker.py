@@ -11,7 +11,7 @@ def create_render_for_comet(args, actor_critic, num_processes=1):
     device = torch.device("cuda:0" if args.cuda else "cpu")
 
     env_gym = make_vec_envs(
-        "GrowSpaceEnv-Continuous-v0",
+        args.env_name,
         args.seed,
         num_processes,
         args.gamma,
