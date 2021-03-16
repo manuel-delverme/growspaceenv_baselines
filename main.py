@@ -41,7 +41,7 @@ def main():
     #else:
         #experiment = None
     wandb.init(project='ppo', entity='growspace')
-    wandb.config(args)
+    wandb.config()
 
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
