@@ -172,7 +172,7 @@ class NNBase(nn.Module):
 
 class CNNBase(NNBase):
     def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=6):
-        """ at first kernels were 8, 4, 3  now we try 6,4,3 """
+        """ At first kernels were 8, 4, 3  now we try 6,4,3 """
         super(CNNBase, self).__init__(recurrent, hidden_size, hidden_size)
 
         assert len(obs_shape) == 3
