@@ -1,8 +1,8 @@
-try:
-    from comet_ml import Experiment
-    comet_loaded = True
-except ImportError:
-    comet_loaded = False
+#try:
+#    from comet_ml import Experiment
+#    comet_loaded = True
+#except ImportError:
+#    comet_loaded = False
 import copy
 import glob
 import os
@@ -40,8 +40,8 @@ def main():
             #experiment.log_parameter(key, value)
     #else:
         #experiment = None
-    wandb.init(project='ppo', entity='growspace')
-    #wandb.config()
+    wandb.init(settings=wandb.Settings(start_method="fork"),project='ppo', entity='growspace')
+    wandb.config()
 
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
