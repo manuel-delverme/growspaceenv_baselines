@@ -54,8 +54,9 @@ def main():
     torch.set_num_threads(1)
     device = torch.device("cuda:0" if args.cuda else "cpu")
 
-    envs = make_vec_envs(args.env_name, args.seed, args.num_processes,
-                         args.gamma, args.log_dir, device, False, args.custom_gym)
+    envs = make_vec_envs(
+        args.env_name, args.seed, args.num_processes, args.gamma, args.log_dir, device, False, args.custom_gym
+    )
 
     actor_critic = Policy(
         envs.observation_space.shape,
@@ -113,7 +114,6 @@ def main():
     episode_light_position = []
     episode_beam_width = []
 
-    # new_branches = []
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
 
@@ -121,8 +121,7 @@ def main():
     num_updates = int(args.num_env_steps) // args.num_steps // args.num_processes
     x = 0
     step_logger_counter = 0
-    # s = 0
-    # av_ep_move = []
+
     for j in range(num_updates):
         if args.use_linear_lr_decay:
             # decrease learning rate linearly
@@ -131,17 +130,13 @@ def main():
                 agent.optimizer.lr if args.algo == "acktr" else args.lr)
         # new_branches = []
         for step in range(args.num_steps):
-            # if s == 0:
-            # light_move_ep = []
-            # s +=1
-            # Sample actions
             with torch.no_grad():
                 value, action, action_log_prob, recurrent_hidden_states = actor_critic.act(
                     rollouts.obs[step], rollouts.recurrent_hidden_states[step],
                     rollouts.masks[step])
 
-                # if experiment is not None:
-                #     experiment.log_histogram_3d(action, name="Actions", step=step_logger_counter)
+            # if j % args.log_interval == 0 and len(episode_rewards) > 1:
+                # wandb.log({"Actions": wandb.Histogram(action)}, step=step_logger_counter)
 
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
@@ -153,8 +148,8 @@ def main():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
 
-                    # if experiment is not None:
-                    #     experiment.log_metric("Episode Reward", info['episode']['r'].item(), step=step_logger_counter)
+                    # if j % args.log_interval == 0 and len(episode_rewards) > 1:
+                    #     wandb.log({"Episode Reward": info['episode']['r'].item()}, step=step_logger_counter)
                     #     step_logger_counter += 1
 
                 if 'new_branches' in info.keys():
@@ -184,8 +179,7 @@ def main():
                     x += 1000
 
             # If done then clean the history of observations.
-            masks = torch.FloatTensor(
-                [[0.0] if done_ else [1.0] for done_ in done])
+            masks = torch.FloatTensor([[0.0] if done_ else [1.0] for done_ in done])
             bad_masks = torch.FloatTensor(
                 [[0.0] if 'bad_transition' in info.keys() else [1.0]
                  for info in infos])
@@ -203,8 +197,7 @@ def main():
         rollouts.after_update()
 
         # save for every interval-th episode or for the last epoch
-        if (j % args.save_interval == 0
-            or j == num_updates - 1) and args.save_dir != "":
+        if (j % args.save_interval == 0 or j == num_updates - 1) and args.save_dir != "":
             save_path = os.path.join(args.save_dir, args.algo)
             try:
                 os.makedirs(save_path)
@@ -238,8 +231,7 @@ def main():
             wandb.log({"Episode Length Min": np.min(episode_length)}, step=total_num_steps)
             wandb.log({"Episode Length Max": np.max(episode_length)}, step=total_num_steps)
             wandb.log({"Entropy": dist_entropy}, step=total_num_steps)
-            wandb.log({"Displacement of Light Position": wandb.Histogram(episode_light_position)},
-                      step=total_num_steps)
+            wandb.log({"Displacement of Light Position": wandb.Histogram(episode_light_position)}, step=total_num_steps)
             # experiment.log_histogram_3d(name="Displacement Beam Width", values=episode_beam_width,
             #                             step=total_num_steps)
             #

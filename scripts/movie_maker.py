@@ -39,7 +39,7 @@ def create_render_for_comet(args, actor_critic, num_processes=1):
         obs, rewards, dones, info = env_gym.step(action)
         if dones:
             break
-        # env_gym.render()
+        env_gym.render()
 
     env_gym.close()
 
