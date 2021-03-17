@@ -216,12 +216,12 @@ def main():
                 getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
             ], os.path.join(save_path, args.env_name + ".pt"))
 
-        if args.eval_interval is not None and len(episode_rewards) > 1 and j % args.eval_interval == 0:
+        if j % args.log_interval == 0 and len(episode_rewards) > 1:
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
-
             wandb.log({"Reward Min": np.min(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
+            wandb.log({"EPISODE REWARD": episode_rewards}, step=total_num_steps)
             wandb.log({"Reward Max": np.max(episode_rewards)}, step=total_num_steps)
             wandb.log({"Number of Mean New Branches": np.mean(episode_branches)}, step=total_num_steps)
             wandb.log({"Number of Max New Branches": np.max(episode_branches)}, step=total_num_steps)
@@ -233,13 +233,13 @@ def main():
             wandb.log({"Mean Light Width": np.mean(episode_light_width)}, step=total_num_steps)
             wandb.log({"Number of Steps in Episode with Tree is as close as possible": np.sum(episode_success)},
                       step=total_num_steps)
-            # experiment.log_metric("Number of Total New Branches", np.sum(episode_branches), step=total_num_steps)
-            # experiment.log_metric("Episode Length Mean ", np.mean(episode_length), step=total_num_steps);
-            # experiment.log_metric("Episode Length Min", np.min(episode_length), step=total_num_steps)
-            # experiment.log_metric("Episode Length Max", np.max(episode_length), step=total_num_steps)
-            # experiment.log_metric("Entropy", dist_entropy, step=total_num_steps)
-            # experiment.log_histogram_3d(name="Displacement of Light Position", values=episode_light_position,
-            #                             step=total_num_steps)
+            wandb.log({"Number of Total New Branches": np.sum(episode_branches)}, step=total_num_steps)
+            wandb.log({"Episode Length Mean ": np.mean(episode_length)}, step=total_num_steps)
+            wandb.log({"Episode Length Min": np.min(episode_length)}, step=total_num_steps)
+            wandb.log({"Episode Length Max": np.max(episode_length)}, step=total_num_steps)
+            wandb.log({"Entropy": dist_entropy}, step=total_num_steps)
+            wandb.log({"Displacement of Light Position": wandb.Histogram(episode_light_position)},
+                      step=total_num_steps)
             # experiment.log_histogram_3d(name="Displacement Beam Width", values=episode_beam_width,
             #                             step=total_num_steps)
             #
@@ -248,10 +248,10 @@ def main():
             # experiment.log_histogram_3d(name="Displacement Light Width", values=episode_light_width,
             #                             step=total_num_steps)
 
-            print(f"Updates{j}, timessteps {total_num_steps}, FPS {int(total_num_steps / (end - start))}, "
-                  f"Last {len(episode_rewards)}, "
-                  f"training episodes: mean/median reward {np.mean(episode_rewards)}/{np.median(episode_rewards)}, "
-                  f"min/max reward {np.min(episode_rewards)}/{np.max(episode_rewards)}, "
+            print(f"Updates: {j}, timesteps {total_num_steps}, FPS: {int(total_num_steps / (end - start))}, "
+                  f"Last reward: {len(episode_rewards)}, \n"
+                  f"training episodes: mean/median reward {np.mean(episode_rewards)}/{np.median(episode_rewards)}, \n"
+                  f"min/max reward {np.min(episode_rewards)}/{np.max(episode_rewards)}, \n"
                   f"dist_entropy: {dist_entropy}, value_loss: {value_loss}, action_loss: {action_loss}")
 
             # gif, gif_filepath = create_render_for_comet(args, actor_critic)
