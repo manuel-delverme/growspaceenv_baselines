@@ -135,8 +135,10 @@ def main():
                     rollouts.obs[step], rollouts.recurrent_hidden_states[step],
                     rollouts.masks[step])
 
-            # if j % args.log_interval == 0 and len(episode_rewards) > 1:
-                # wandb.log({"Actions": wandb.Histogram(action)}, step=step_logger_counter)
+            if j % args.log_interval == 0 and len(episode_rewards) > 1:
+                # wandb.log({"Actions": wandb.Histogram(action.detach().cpu())}, step=step_logger_counter)
+                print(f"action: {action.detach().cpu()}")
+                step_logger_counter += 1
 
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
