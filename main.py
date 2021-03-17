@@ -1,19 +1,15 @@
 try:
     from comet_ml import Experiment
+
     comet_loaded = True
 except ImportError:
     comet_loaded = False
-import copy
-import glob
 import os
 import time
 from collections import deque
-import gym
+
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 
 from a2c_ppo_acktr import algo, utils
 from a2c_ppo_acktr.algo import gail
@@ -22,10 +18,11 @@ from a2c_ppo_acktr.envs import make_vec_envs
 from a2c_ppo_acktr.model import Policy
 from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
-import os
-os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**84)
+
+os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
 import cv2
 from comet_ml import Experiment
+
 
 def main():
     args = get_args()
@@ -57,7 +54,6 @@ def main():
 
     envs = make_vec_envs(args.env_name, args.seed, args.num_processes,
                          args.gamma, args.log_dir, device, False, args.custom_gym)
-
 
     actor_critic = Policy(
         envs.observation_space.shape,
@@ -97,7 +93,7 @@ def main():
         file_name = os.path.join(
             args.gail_experts_dir, "trajs_{}.pt".format(
                 args.env_name.split('-')[0].lower()))
-        
+
         expert_dataset = gail.ExpertDataset(
             file_name, num_trajectories=4, subsample_frequency=20)
         drop_last = len(expert_dataset) > args.gail_batch_size
@@ -123,15 +119,15 @@ def main():
     episode_light_width = deque(maxlen=10)
     episode_light_move = deque(maxlen=10)
     episode_success = deque(maxlen=10)
-    #episode_light_move = deque(maxlen=10)
-    #new_branches = []
+    # episode_light_move = deque(maxlen=10)
+    # new_branches = []
     episode_success_rate = deque(maxlen=100)
     episode_total = 0
 
     start = time.time()
     num_updates = int(
         args.num_env_steps) // args.num_steps // args.num_processes
-    #print("what are the num_updates",num_updates)
+    # print("what are the num_updates",num_updates)
     x = 0
     for j in range(num_updates):
 
@@ -140,7 +136,7 @@ def main():
             utils.update_linear_schedule(
                 agent.optimizer, j, num_updates,
                 agent.optimizer.lr if args.algo == "acktr" else args.lr)
-        #new_branches = []
+        # new_branches = []
         for step in range(args.num_steps):
             # Sample actions
             with torch.no_grad():
@@ -150,21 +146,21 @@ def main():
 
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
-            #misc = {"tips": tips, "target": self.target, "light": self.x1_light, "light width": LIGHT_WIDTH, "step": self.steps. "new_branches": self.new_branches}
+            # misc = {"tips": tips, "target": self.target, "light": self.x1_light, "light width": LIGHT_WIDTH, "step": self.steps. "new_branches": self.new_branches}
 
             for info in infos:
-                #print("what is info:",info.keys())
+                # print("what is info:",info.keys())
                 if 'episode' in info.keys():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
-                    #print("ep rewards:", episode_rewards)
+                    # print("ep rewards:", episode_rewards)
 
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
-                    #print("what is in new branches", info['new_branches'])
+                    # print("what is in new branches", info['new_branches'])
                     # print("type of data:", type(info['new_branches']))
 
-                    #print("what is new branches", new_branches)
+                    # print("what is new branches", new_branches)
                 if 'new_b1' in info.keys():
                     episode_branch1.append(info['new_b1'])
 
@@ -173,11 +169,11 @@ def main():
 
                 if 'light_width' in info.keys():
                     episode_light_width.append(info['light_width'])
-                    #print("what is new branches", new_branches)
+                    # print("what is new branches", new_branches)
 
                 if 'light_move' in info.keys():
                     episode_light_move.append(info['light_move'])
-                    #print("what is new branches", new_branches)
+                    # print("what is new branches", new_branches)
 
                 if 'success' in info.keys():
                     episode_success.append(info['success'])
@@ -189,7 +185,6 @@ def main():
                         path = './hittiyas/growspaceenv_braselines/scripts/imgs/'
                         cv2.imwrite(os.path.join(path, 'step' + str(step) + '.png'), img)
                     x += 1000
-
 
             # If done then clean the history of observations.
             masks = torch.FloatTensor(
@@ -204,10 +199,10 @@ def main():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
-        #print("before")
-        #episode_branches.append(np.asarray([[np.mean(new_branches)]]))
-        #print("after")
-        #print(episode_branches)
+        # print("before")
+        # episode_branches.append(np.asarray([[np.mean(new_branches)]]))
+        # print("after")
+        # print(episode_branches)
         if args.gail:
             if j >= 10:
                 envs.venv.eval()
@@ -231,10 +226,9 @@ def main():
 
         rollouts.after_update()
 
-
         # save for every interval-th episode or for the last epoch
         if (j % args.save_interval == 0
-                or j == num_updates - 1) and args.save_dir != "":
+            or j == num_updates - 1) and args.save_dir != "":
             save_path = os.path.join(args.save_dir, args.algo)
             try:
                 os.makedirs(save_path)
@@ -293,15 +287,15 @@ def main():
                     np.max(episode_length),
                     step=total_num_steps)
 
-            #print("Number of mean branches", np.mean(episode_branches))
+            # print("Number of mean branches", np.mean(episode_branches))
             print(
                 "Updates {}, num timesteps {}, FPS {} \n Last {} training episodes: mean/median reward {:.1f}/{:.1f}, min/max reward {:.1f}/{:.1f}\n"
-                .format(j, total_num_steps,
-                        int(total_num_steps / (end - start)),
-                        len(episode_rewards), np.mean(episode_rewards),
-                        np.median(episode_rewards), np.min(episode_rewards),
-                        np.max(episode_rewards), dist_entropy, value_loss,
-                        action_loss))
+                    .format(j, total_num_steps,
+                            int(total_num_steps / (end - start)),
+                            len(episode_rewards), np.mean(episode_rewards),
+                            np.median(episode_rewards), np.min(episode_rewards),
+                            np.max(episode_rewards), dist_entropy, value_loss,
+                            action_loss))
 
         if (args.eval_interval is not None and len(episode_rewards) > 1
                 and j % args.eval_interval == 0):
