@@ -124,9 +124,10 @@ def main():
     start = time.time()
     num_updates = int(args.num_env_steps) // args.num_steps // args.num_processes
     x = 0
-    step_logger_counter = 0
 
     for j in range(num_updates):
+        action_dist = np.zeros(envs.action_space.n)
+
         if args.use_linear_lr_decay:
             # decrease learning rate linearly
             utils.update_linear_schedule(
@@ -139,15 +140,11 @@ def main():
                     rollouts.obs[step], rollouts.recurrent_hidden_states[step],
                     rollouts.masks[step])
 
-            if j % args.log_interval == 0 and len(episode_rewards) > 1:
-                # wandb.log({"Actions": wandb.Histogram(action.detach().cpu())}, step=step_logger_counter)
-                print(f"action: {action.detach().cpu()}")
-                step_logger_counter += 1
-
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
             # episode_light_position.append(action[:, 0])
             # episode_beam_width.append(action[:, 1])
+            action_dist[action] += 1
 
             for info in infos:
                 if 'episode' in info.keys():
@@ -155,8 +152,7 @@ def main():
                     episode_length.append(info['episode']['l'])
 
                     # if j % args.log_interval == 0 and len(episode_rewards) > 1:
-                    #     wandb.log({"Episode Reward": info['episode']['r'].item()}, step=step_logger_counter)
-                    #     step_logger_counter += 1
+                    #     wandb.log({"Episode Reward": info['episode']['r'].item()}, step=total_num_steps)
 
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
@@ -234,9 +230,14 @@ def main():
                 getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
             ], os.path.join(save_path, args.env_name + ".pt"))
 
+        print(j)
         if j % args.log_interval == 0 and len(episode_rewards) > 1:
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
+
+            np_hist = np.histogram(np.arange(action_dist.shape[0]), weights=action_dist)
+            wandb.log({"Actions": wandb.Histogram(np_histogram=np_hist)}, step=total_num_steps)
+
             wandb.log({"Reward Min": np.min(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
             wandb.log({"EPISODE REWARD": episode_rewards}, step=total_num_steps)
