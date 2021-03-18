@@ -104,6 +104,7 @@ trained_models/
 .fuse_hidden*
 gifs/
 .idea/
+<<<<<<< HEAD
 
 # lia stuff
 PPO2*
@@ -115,3 +116,6 @@ videos
 wandb
 other_experiments.py
 train_with_ppo_stable_baselines.py
+=======
+/wandb/
+>>>>>>> Spotlight

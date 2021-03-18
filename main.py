@@ -22,15 +22,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import wandb
+import numpy as np
+import torch
+
 from a2c_ppo_acktr import algo, utils
 from a2c_ppo_acktr.arguments import get_args
 from a2c_ppo_acktr.envs import make_vec_envs
 from a2c_ppo_acktr.model import Policy
 from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
-from scripts.movie_maker import create_render_for_comet
 
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
+import cv2
+from comet_ml import Experiment
 
 
 def main():
@@ -168,7 +172,7 @@ def main():
 
                 if 'light_move' in info.keys():
                     episode_light_move.append(info['light_move'])
-                    # light_move_ep.append(info['light_move'])
+                    # print("what is new branches", new_branches)
 
                 if 'success' in info.keys():
                     episode_success.append(info['success'])
@@ -191,6 +195,25 @@ def main():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
+        # print("before")
+        # episode_branches.append(np.asarray([[np.mean(new_branches)]]))
+        # print("after")
+        # print(episode_branches)
+        if args.gail:
+            if j >= 10:
+                envs.venv.eval()
+
+            gail_epoch = args.gail_epoch
+            if j < 10:
+                gail_epoch = 100  # Warm up
+            for _ in range(gail_epoch):
+                discr.update(gail_train_loader, rollouts,
+                             utils.get_vec_normalize(envs)._obfilt)
+
+            for step in range(args.num_steps):
+                rollouts.rewards[step] = discr.predict_reward(
+                    rollouts.obs[step], rollouts.actions[step], args.gamma,
+                    rollouts.masks[step])
 
         rollouts.compute_returns(next_value, args.use_gae, args.gamma, args.gae_lambda, args.use_proper_time_limits)
 
