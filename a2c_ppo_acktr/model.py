@@ -20,8 +20,7 @@ class Policy(nn.Module):
         if base_kwargs is None:
             base_kwargs = {}
         if base == 'Mnist':
-            if len(obs_shape) == 3:
-                base = CNNMnist
+            base = CNNMnist
         if base is None:
             if len(obs_shape) == 3:
                 base = CNNBase
@@ -198,6 +197,19 @@ class CNNBase(NNBase):
         self.critic_linear = init_critic_layer(nn.Linear(hidden_size, 1))
 
         self.train()
+
+    def forward(self, inputs, rnn_hxs, masks):
+        x = inputs / 255.0
+        x = self.activation(self.cnn_layer1(x))
+        x = self.activation(self.cnn_layer2(x))
+        x = self.activation(self.cnn_layer3(x))
+        x = x.view(-1, x.shape[1:].numel())
+        x = self.activation(self.linear_layer(x))
+
+        if self.is_recurrent:
+            x, rnn_hxs = self._forward_gru(x, rnn_hxs, masks)
+
+        return self.critic_linear(x), x, rnn_hxs
 
 class CNNMnist(NNBase):
     def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=3):
