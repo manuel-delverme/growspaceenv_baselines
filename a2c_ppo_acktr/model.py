@@ -19,6 +19,9 @@ class Policy(nn.Module):
         super(Policy, self).__init__()
         if base_kwargs is None:
             base_kwargs = {}
+        if base == 'Mnist':
+            if len(obs_shape) == 3:
+                base = CNNMnist
         if base is None:
             if len(obs_shape) == 3:
                 base = CNNBase
@@ -27,8 +30,8 @@ class Policy(nn.Module):
             else:
                 raise NotImplementedError
 
-        self.base = base(obs_shape, **base_kwargs)  # TODO Lia changed this, the original is the below commendted line
-        # self.base = base(obs_shape[0], **base_kwargs)
+        #self.base = base(obs_shape, **base_kwargs)  # TODO Lia changed this, the original is the below commendted line
+        self.base = base(obs_shape[0], **base_kwargs)
         print("obs_shape[0]:", obs_shape[0])
         if action_space.__class__.__name__ == "Discrete":
             num_outputs = action_space.n
@@ -171,7 +174,8 @@ class NNBase(nn.Module):
 
 class CNNBase(NNBase):
     def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=6):
-        """ At first kernels were 8, 4, 3  now we try 6,4,3 """
+        """ At first kernels were 8, 4, 3  now we try 6,4,3, this is for all growspace except mnist """
+
         super(CNNBase, self).__init__(recurrent, hidden_size, hidden_size)
 
         assert len(obs_shape) == 3
@@ -179,6 +183,34 @@ class CNNBase(NNBase):
         print("number of inputs:", num_inputs)
 
         self.cnn_layer1 = init_layer_in_actor(nn.Conv2d(num_inputs, num_feature_maps, kernel_size, stride=4, padding=0))
+        self.cnn_layer2 = init_layer_in_actor(
+            nn.Conv2d(num_feature_maps, num_feature_maps * 2, int(kernel_size / 2), stride=2, padding=0))
+        self.cnn_layer3 = init_layer_in_actor(
+            nn.Conv2d(num_feature_maps * 2, num_feature_maps, int(kernel_size / 2), stride=1, padding=0))
+
+        feature_map_for_linear_layer = calculate_next_feature_map_size(
+            [self.cnn_layer1, self.cnn_layer2, self.cnn_layer3], input_width
+        )
+        self.linear_layer = init_layer_in_actor(
+            nn.Linear(num_feature_maps * feature_map_for_linear_layer ** 2, hidden_size))
+        self.activation = nn.ReLU()
+
+        self.critic_linear = init_critic_layer(nn.Linear(hidden_size, 1))
+
+        self.train()
+
+class CNNMnist(NNBase):
+    def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=3):
+        """ Start with kernel 3 for mnist challenges """
+
+        super(CNNMnist, self).__init__(recurrent, hidden_size, hidden_size)
+
+        assert len(obs_shape) == 3
+        num_inputs, input_width, _ = obs_shape
+        print("number of inputs:", num_inputs)
+
+        self.cnn_layer1 = init_layer_in_actor(
+            nn.Conv2d(num_inputs, num_feature_maps, kernel_size, stride=4, padding=0))
         self.cnn_layer2 = init_layer_in_actor(
             nn.Conv2d(num_feature_maps, num_feature_maps * 2, int(kernel_size / 2), stride=2, padding=0))
         self.cnn_layer3 = init_layer_in_actor(
