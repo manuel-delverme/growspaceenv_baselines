@@ -61,7 +61,7 @@ def main():
     envs = make_vec_envs(args.env_name, args.seed, args.num_processes,
                          args.gamma, args.log_dir, device, False, args.custom_gym)
 
-    if args.env_name == 'GrowSpaceSpolight-Mnist-v0':
+    if args.env_name == 'GrowSpaceSpotlight-Mnist-v0':
         base = 'Mnist'
     else:
         base = None
