@@ -267,7 +267,7 @@ def main():
         if j % args.log_interval == 0 and len(episode_rewards) > 1:
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
-            wandb.log({"Reward Min":np.min(episode_rewards)}, step=total_num_steps)
+            wandb.log({"Reward Min": np.min(episode_rewards)}, step=total_num_steps)
             wandb.log({"Episode Reward": episode_rewards}, step=total_num_steps)
             wandb.log({"Summed Reward": np.sum(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
@@ -281,6 +281,8 @@ def main():
             wandb.log({"Mean Light Displacement": episode_light_move}, step=total_num_steps)
             wandb.log({"Mean Light Width": episode_light_width}, step=total_num_steps)
             wandb.log({"Number of Steps in Episode with Tree is as close as possible": np.sum(episode_success)},step=total_num_steps)
+
+
             # if experiment is not None:
             #     experiment.log_metric(
             #         "Reward Mean",
@@ -334,6 +336,15 @@ def main():
                         np.median(episode_rewards), np.min(episode_rewards),
                         np.max(episode_rewards), dist_entropy, value_loss,
                         action_loss))
+            episode_rewards.clear()
+            episode_length.clear()
+            episode_branches.clear()
+            episode_branch2.clear()
+            episode_branch1.clear()
+            episode_light_move.clear()
+            episode_light_width.clear()
+            episode_success.clear()
+           
 
         if (args.eval_interval is not None and len(episode_rewards) > 1
                 and j % args.eval_interval == 0):
