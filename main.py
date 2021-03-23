@@ -268,6 +268,8 @@ def main():
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
             wandb.log({"Reward Min":np.min(episode_rewards)}, step=total_num_steps)
+            wandb.log({"Episode Reward": episode_rewards}, step=total_num_steps)
+            wandb.log({"Summed Reward": np.sum(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Max": np.max(episode_rewards)}, step=total_num_steps)
             wandb.log({"Number of Mean New Branches": np.mean(episode_branches)}, step=total_num_steps)
@@ -276,8 +278,8 @@ def main():
             wandb.log({"Number of Mean New Branches of Plant 1": np.mean(episode_branch1)}, step = total_num_steps)
             wandb.log({"Number of Mean New Branches of Plant 2": np.mean(episode_branch2)}, step=total_num_steps)
             wandb.log({"Number of Total Displacement of Light": np.sum(episode_light_move)}, step=total_num_steps)
-            wandb.log({"Mean Light Displacement": np.mean(episode_light_move)}, step=total_num_steps)
-            wandb.log({"Mean Light Width": np.mean(episode_light_width)}, step=total_num_steps)
+            wandb.log({"Mean Light Displacement": episode_light_move}, step=total_num_steps)
+            wandb.log({"Mean Light Width": episode_light_width}, step=total_num_steps)
             wandb.log({"Number of Steps in Episode with Tree is as close as possible": np.sum(episode_success)},step=total_num_steps)
             # if experiment is not None:
             #     experiment.log_metric(
