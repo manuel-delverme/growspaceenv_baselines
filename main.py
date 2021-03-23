@@ -268,7 +268,7 @@ def main():
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
             wandb.log({"Reward Min": np.min(episode_rewards)}, step=total_num_steps)
-            wandb.log({"Episode Reward": episode_rewards}, step=total_num_steps)
+            #wandb.log({"Episode Reward": episode_rewards}, step=total_num_steps)
             wandb.log({"Summed Reward": np.sum(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Max": np.max(episode_rewards)}, step=total_num_steps)
@@ -344,7 +344,7 @@ def main():
             episode_light_move.clear()
             episode_light_width.clear()
             episode_success.clear()
-           
+
 
         if (args.eval_interval is not None and len(episode_rewards) > 1
                 and j % args.eval_interval == 0):
