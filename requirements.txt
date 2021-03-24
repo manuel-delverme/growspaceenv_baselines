@@ -1,7 +1,7 @@
 absl-py==0.9.0
 astor==0.7.1
 attrs==19.3.0
--e git+https://github.com/openai/baselines.git@8c4b3935d1defeaf6d825311e3abd638c6a1158d#egg=baselines
+-e git+https://github.com/openai/baselines.git#egg=baselines
 blinker==1.4
 brotlipy==0.7.0
 cachetools==3.1.1
@@ -88,4 +88,4 @@ wurlitzer==2.0.0
 zipp==3.1.0
 gym
 matplotlib
--e git+https://github.com/ministry-of-silly-code/experiment_buddy@projectName#egg=experiment_buddy
+-e git+https://github.com/ministry-of-silly-code/experiment_buddy#egg=experiment_buddy

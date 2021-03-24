@@ -9,4 +9,4 @@ LIGHT_DIF = 250
 
 experiment_buddy.register(locals())
 
-tensorboard = experiment_buddy.deploy("mila", sweep_yaml="./sweep.yaml", entity='growspace')
+tensorboard = experiment_buddy.deploy("mila", sweep_yaml="", entity='growspace')
