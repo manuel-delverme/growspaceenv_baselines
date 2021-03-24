@@ -4,10 +4,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from a2c_ppo_acktr.distributions import Bernoulli, Categorical, DiagGaussian
+from a2c_ppo_acktr.utils import calculate_next_feature_map_size
 from a2c_ppo_acktr.utils import init
 from a2c_ppo_acktr.utils import calculate_next_feature_map_size
 from a2c_ppo_acktr.utils import init_layer_in_actor
 from a2c_ppo_acktr.utils import init_critic_layer
+from a2c_ppo_acktr.utils import init_critic_layer
+from a2c_ppo_acktr.utils import init_layer_in_actor
 
 
 class Flatten(nn.Module):
@@ -20,6 +23,8 @@ class Policy(nn.Module):
         super(Policy, self).__init__()
         if base_kwargs is None:
             base_kwargs = {}
+        if base == 'Mnist':
+            base = CNNMnist
         if base is None:
             if len(obs_shape) == 3:
                 base = CNNBase
@@ -65,7 +70,7 @@ class Policy(nn.Module):
             action = dist.sample()
 
         action_log_probs = dist.log_probs(action)
-        # dist_entropy = dist.entropy().mean()
+        dist_entropy = dist.entropy().mean()
 
         return value, action, action_log_probs, rnn_hxs
 
@@ -171,12 +176,13 @@ class NNBase(nn.Module):
 
 
 class CNNBase(NNBase):
-    def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=3):
+    def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=6):
         """
-        At first kernels were 8, 4, 3  now we try 6,4,3
-       Used those formulas to calculate the feature map in the linear layer:
+        At first kernels were 8, 4, 3  now we try 6,4,3, this is for all growspace except mnist,
+        Used those formulas to calculate the feature map in the linear layer:
         @https://datascience.stackexchange.com/questions/40906/determining-size-of-fc-layer-after-conv-layer-in-pytorch
         """
+
         super(CNNBase, self).__init__(recurrent, hidden_size, hidden_size)
 
         assert len(obs_shape) == 3
@@ -194,6 +200,47 @@ class CNNBase(NNBase):
         )
         assert feature_map_for_linear_layer >= 1, f"Ouch! the layer 3 feature is of size {feature_map_for_linear_layer}"
 
+        self.linear_layer = init_layer_in_actor(
+            nn.Linear(num_feature_maps * feature_map_for_linear_layer ** 2, hidden_size))
+        self.activation = nn.ReLU()
+
+        self.critic_linear = init_critic_layer(nn.Linear(hidden_size, 1))
+
+        self.train()
+
+    def forward(self, inputs, rnn_hxs, masks):
+        x = inputs / 255.0
+        x = self.activation(self.cnn_layer1(x))
+        x = self.activation(self.cnn_layer2(x))
+        x = self.activation(self.cnn_layer3(x))
+        x = x.view(-1, x.shape[1:].numel())
+        x = self.activation(self.linear_layer(x))
+
+        if self.is_recurrent:
+            x, rnn_hxs = self._forward_gru(x, rnn_hxs, masks)
+
+        return self.critic_linear(x), x, rnn_hxs
+
+class CNNMnist(NNBase):
+    def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=3):
+        """ Start with kernel 3 for mnist challenges """
+
+        super(CNNMnist, self).__init__(recurrent, hidden_size, hidden_size)
+
+        assert len(obs_shape) == 3
+        num_inputs, input_width, _ = obs_shape
+        print("number of inputs:", num_inputs)
+
+        self.cnn_layer1 = init_layer_in_actor(
+            nn.Conv2d(num_inputs, num_feature_maps, kernel_size, stride=4, padding=0))
+        self.cnn_layer2 = init_layer_in_actor(
+            nn.Conv2d(num_feature_maps, num_feature_maps * 2, int(kernel_size / 2), stride=2, padding=0))
+        self.cnn_layer3 = init_layer_in_actor(
+            nn.Conv2d(num_feature_maps * 2, num_feature_maps, int(kernel_size / 2), stride=1, padding=0))
+
+        feature_map_for_linear_layer = calculate_next_feature_map_size(
+            [self.cnn_layer1, self.cnn_layer2, self.cnn_layer3], input_width
+        )
         self.linear_layer = init_layer_in_actor(
             nn.Linear(num_feature_maps * feature_map_for_linear_layer ** 2, hidden_size))
         self.activation = nn.ReLU()

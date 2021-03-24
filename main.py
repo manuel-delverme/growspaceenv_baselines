@@ -1,12 +1,10 @@
-import logging
-
 try:
     from comet_ml import Experiment
-
     comet_loaded = True
 except ImportError:
     comet_loaded = False
-import getpass
+import copy
+import glob
 import os
 import time
 from collections import deque
@@ -40,8 +38,8 @@ from comet_ml import Experiment
 def main():
     args = get_args()
 
-    wandb.init(project='ppo', entity='growspace')
-    # wandb.config()
+    wandb.init(settings=wandb.Settings(start_method="fork"),project='ppo', entity='growspace')
+    #wandb.config()
 
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -61,12 +59,19 @@ def main():
     envs = make_vec_envs(
         args.env_name, args.seed, args.num_processes, args.gamma, args.log_dir, device, False, args.custom_gym
     )
+    envs = make_vec_envs(args.env_name, args.seed, args.num_processes,
+                         args.gamma, args.log_dir, device, False, args.custom_gym)
+
+    if "Mnist" in args.env_name:
+        base = 'Mnist'
+    else:
+        base = None
 
     actor_critic = Policy(
         envs.observation_space.shape,
         envs.action_space,
-        base_kwargs={'recurrent': args.recurrent_policy}
-    )
+        base,
+        base_kwargs={'recurrent': args.recurrent_policy})
     actor_critic.to(device)
 
     if args.algo == 'a2c':
@@ -95,13 +100,27 @@ def main():
     elif args.algo == 'acktr':
         agent = algo.A2C_ACKTR(actor_critic, args.value_loss_coef, args.entropy_coef, acktr=True)
 
-    rollouts = RolloutStorage(
-        args.num_steps,
-        args.num_processes,
-        envs.observation_space.shape,
-        envs.action_space,
-        actor_critic.recurrent_hidden_state_size
-    )
+    if args.gail:
+        assert len(envs.observation_space.shape) == 1
+        discr = gail.Discriminator(
+            envs.observation_space.shape[0] + envs.action_space.shape[0], 100,
+            device)
+        file_name = os.path.join(
+            args.gail_experts_dir, "trajs_{}.pt".format(
+                args.env_name.split('-')[0].lower()))
+        
+        expert_dataset = gail.ExpertDataset(
+            file_name, num_trajectories=4, subsample_frequency=20)
+        drop_last = len(expert_dataset) > args.gail_batch_size
+        gail_train_loader = torch.utils.data.DataLoader(
+            dataset=expert_dataset,
+            batch_size=args.gail_batch_size,
+            shuffle=True,
+            drop_last=drop_last)
+
+    rollouts = RolloutStorage(args.num_steps, args.num_processes,
+                              envs.observation_space.shape, envs.action_space,
+                              actor_critic.recurrent_hidden_state_size)
 
     obs = envs.reset()
     rollouts.obs[0].copy_(obs)
@@ -201,6 +220,7 @@ def main():
         value_loss, action_loss, dist_entropy = agent.update(rollouts)
 
         rollouts.after_update()
+
 
         # save for every interval-th episode or for the last epoch
         if (j % args.save_interval == 0 or j == num_updates - 1) and args.save_dir != "":
