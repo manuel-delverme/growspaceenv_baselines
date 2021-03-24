@@ -171,7 +171,7 @@ class NNBase(nn.Module):
 
 
 class CNNBase(NNBase):
-    def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=6):
+    def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=3):
         """
         At first kernels were 8, 4, 3  now we try 6,4,3
        Used those formulas to calculate the feature map in the linear layer:
@@ -192,6 +192,8 @@ class CNNBase(NNBase):
         feature_map_for_linear_layer = calculate_next_feature_map_size(
             [self.cnn_layer1, self.cnn_layer2, self.cnn_layer3], input_width
         )
+        assert feature_map_for_linear_layer >= 1, f"Ouch! the layer 3 feature is of size {feature_map_for_linear_layer}"
+
         self.linear_layer = init_layer_in_actor(
             nn.Linear(num_feature_maps * feature_map_for_linear_layer ** 2, hidden_size))
         self.activation = nn.ReLU()
