@@ -221,6 +221,7 @@ class CNNBase(NNBase):
 
         return self.critic_linear(x), x, rnn_hxs
 
+
 class CNNMnist(NNBase):
     def __init__(self, obs_shape, recurrent=False, hidden_size=512, num_feature_maps=32, kernel_size=3):
         """ Start with kernel 3 for mnist challenges """

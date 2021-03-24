@@ -6,7 +6,7 @@ import torch
 def get_args():
     parser = argparse.ArgumentParser(description='RL')
     parser.add_argument(
-        '--algo', default='a2c', help='algorithm to use: a2c | ppo | acktr')
+        '--algo', default='ppo', help='algorithm to use: a2c | ppo | acktr')
     parser.add_argument(
         '--gail',
         action='store_true',
@@ -24,7 +24,7 @@ def get_args():
     parser.add_argument(
         '--gail-epoch', type=int, default=5, help='gail epochs (default: 5)')
     parser.add_argument(
-        '--lr', type=float, default=7e-4, help='learning rate (default: 7e-4)')
+        '--lr', type=float, default=2.5e-4, help='learning rate (default: 7e-4)')
     parser.add_argument(
         '--eps',
         type=float,
@@ -43,7 +43,7 @@ def get_args():
     parser.add_argument(
         '--use-gae',
         action='store_true',
-        default=False,
+        default=True,
         help='use generalized advantage estimation')
     parser.add_argument(
         '--gae-lambda',
@@ -75,21 +75,17 @@ def get_args():
     parser.add_argument(
         '--num-processes',
         type=int,
-        default=16,
+        default=1,
         help='how many training CPU processes to use (default: 16)')
     parser.add_argument(
         '--num-steps',
         type=int,
-        default=5,
+        default=2500,
         help='number of forward steps in A2C (default: 5)')
     parser.add_argument(
         '--custom-gym',
-        default='',
+        default='growspace',
         help='import some dependency package for thew gym env')
-    parser.add_argument(
-        '--comet',
-        default='',
-        help='name of experiment for comet')
     parser.add_argument(
         '--ppo-epoch',
         type=int,
@@ -98,7 +94,7 @@ def get_args():
     parser.add_argument(
         '--num-mini-batch',
         type=int,
-        default=32,
+        default=4,
         help='number of batches for ppo (default: 32)')
     parser.add_argument(
         '--clip-param',
@@ -127,7 +123,7 @@ def get_args():
         help='number of environment steps to train (default: 10e6)')
     parser.add_argument(
         '--env-name',
-        default='PongNoFrameskip-v4',
+        default='GrowSpaceSpotlight-Mnist1-v0',
         help='environment to train on (default: PongNoFrameskip-v4)')
     parser.add_argument(
         '--log-dir',
@@ -155,7 +151,7 @@ def get_args():
     parser.add_argument(
         '--use-linear-lr-decay',
         action='store_true',
-        default=False,
+        default=True,
         help='use a linear schedule on the learning rate')
     args = parser.parse_args()
 

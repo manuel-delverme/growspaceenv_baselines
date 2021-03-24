@@ -1,5 +1,6 @@
 try:
     from comet_ml import Experiment
+
     comet_loaded = True
 except ImportError:
     comet_loaded = False
@@ -19,6 +20,7 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import config
 import wandb
 import numpy as np
 import torch
@@ -38,8 +40,8 @@ from comet_ml import Experiment
 def main():
     args = get_args()
 
-    wandb.init(settings=wandb.Settings(start_method="fork"),project='ppo', entity='growspace')
-    #wandb.config()
+    # wandb.init(settings=wandb.Settings(start_method="fork"), project='ppo', entity='growspace')
+    # wandb.config()
 
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -108,7 +110,7 @@ def main():
         file_name = os.path.join(
             args.gail_experts_dir, "trajs_{}.pt".format(
                 args.env_name.split('-')[0].lower()))
-        
+
         expert_dataset = gail.ExpertDataset(
             file_name, num_trajectories=4, subsample_frequency=20)
         drop_last = len(expert_dataset) > args.gail_batch_size
@@ -220,7 +222,6 @@ def main():
         value_loss, action_loss, dist_entropy = agent.update(rollouts)
 
         rollouts.after_update()
-
 
         # save for every interval-th episode or for the last epoch
         if (j % args.save_interval == 0 or j == num_updates - 1) and args.save_dir != "":

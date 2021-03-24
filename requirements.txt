@@ -88,3 +88,4 @@ wurlitzer==2.0.0
 zipp==3.1.0
 gym
 matplotlib
+-e git+https://github.com/ministry-of-silly-code/experiment_buddy@projectName#egg=experiment_buddy
