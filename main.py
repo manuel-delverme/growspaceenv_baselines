@@ -123,17 +123,17 @@ def main():
     rollouts.obs[0].copy_(obs)
     rollouts.to(device)
 
-    episode_rewards = deque(maxlen=10)
-    episode_length = deque(maxlen=10)
-    episode_branches = deque(maxlen=10)
-    episode_branch1 = deque(maxlen=10)
-    episode_branch2 = deque(maxlen=10)
-    episode_light_width = deque(maxlen=10)
-    episode_light_move = deque(maxlen=10)
-    episode_success = deque(maxlen=10)
+    episode_rewards = [] #deque(maxlen=10)
+    episode_length = [] #deque(maxlen=10)
+    episode_branches = [] #deque(maxlen=10)
+    episode_branch1 = [] #deque(maxlen=10)
+    episode_branch2 = [] #deque(maxlen=10)
+    episode_light_width = [] #deque(maxlen=10)
+    episode_light_move = [] #deque(maxlen=10)
+    episode_success = [] #deque(maxlen=10)
     #episode_light_move = deque(maxlen=10)
     #new_branches = []
-    episode_success_rate = deque(maxlen=100)
+    #episode_success_rate = [] #deque(maxlen=100)
     episode_total = 0
 
     start = time.time()
@@ -268,7 +268,7 @@ def main():
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
             wandb.log({"Reward Min": np.min(episode_rewards)}, step=total_num_steps)
-            #wandb.log({"Episode Reward": episode_rewards}, step=total_num_steps)
+            wandb.log({"Episode Reward": episode_rewards}, step=total_num_steps)
             wandb.log({"Summed Reward": np.sum(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Max": np.max(episode_rewards)}, step=total_num_steps)
