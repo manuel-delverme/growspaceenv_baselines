@@ -1,9 +1,4 @@
-try:
-    from comet_ml import Experiment
-
-    comet_loaded = True
-except ImportError:
-    comet_loaded = False
+import logging
 import copy
 import glob
 import os
