@@ -87,5 +87,5 @@ wurlitzer==2.0.0
 zipp==3.1.0
 gym
 matplotlib
--e git+https://github.com/ministry-of-silly-code/experiment_buddy#egg=experiment_buddy
+-e git+https://github.com/ministry-of-silly-code/experiment_buddy@fixRemotesForPush#egg=experiment_buddy
 -e git+https://github.com/YasmeenVH/growspace#egg=growspace
