@@ -123,14 +123,14 @@ def main():
     rollouts.obs[0].copy_(obs)
     rollouts.to(device)
 
-    episode_rewards = deque(maxlen=50)
-    episode_length = deque(maxlen=50)
-    episode_branches = deque(maxlen=50)
-    episode_branch1 = deque(maxlen=50)
-    episode_branch2 = deque(maxlen=50)
-    episode_light_width = deque(maxlen=50)
-    episode_light_move = deque(maxlen=50)
-    episode_success = deque(maxlen=50)
+    episode_rewards = [] #deque(maxlen=50)
+    episode_length = [] #deque(maxlen=50)
+    episode_branches = [] #deque(maxlen=50)
+    episode_branch1 = [] #deque(maxlen=50)
+    episode_branch2 = [] #deque(maxlen=50)
+    episode_light_width = []#deque(maxlen=50)
+    episode_light_move = [] #deque(maxlen=50)
+    episode_success = [] #deque(maxlen=50)
     #episode_light_move = deque(maxlen=10)
     #new_branches = []
     #episode_success_rate = [] #deque(maxlen=100)
@@ -336,14 +336,14 @@ def main():
                         np.median(episode_rewards), np.min(episode_rewards),
                         np.max(episode_rewards), dist_entropy, value_loss,
                         action_loss))
-            # episode_rewards.clear()
-            # episode_length.clear()
-            # episode_branches.clear()
-            # episode_branch2.clear()
-            # episode_branch1.clear()
-            # episode_light_move.clear()
-            # episode_light_width.clear()
-            # episode_success.clear()
+            episode_rewards.clear()
+            episode_length.clear()
+            episode_branches.clear()
+            episode_branch2.clear()
+            episode_branch1.clear()
+            episode_light_move.clear()
+            episode_light_width.clear()
+            episode_success.clear()
 
 
         if (args.eval_interval is not None and len(episode_rewards) > 1
