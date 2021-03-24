@@ -13,8 +13,8 @@ parameters:
     max: 0.05
   ^BRANCH_LENGTH:
     distribution: uniform
-    min: 1/30
-    max: 1/5
+    min: 0.033
+    max: 0.2
   ^MAX_BRANCHING:
     distribution: q_uniform
     min: 1
@@ -27,21 +27,4 @@ parameters:
     distribution: q_uniform
     min: 100
     max: 400
-
-
-
-
-  ^initial_lr_x:
-    distribution: log_uniform
-    min: -7.76804212
-    max: -4.76804212
-  ^decay_factor:
-    distribution: uniform
-    min: 0.3
-    max: 0.6
-  ^decay_steps:
-    distribution: q_uniform
-    min: 50000
-    max: 1000000
-    q: 10000
 program: main.py
