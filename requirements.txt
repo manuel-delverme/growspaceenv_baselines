@@ -1,7 +1,6 @@
 absl-py==0.9.0
 astor==0.7.1
 attrs==19.3.0
--e git+https://github.com/openai/baselines.git@8c4b3935d1defeaf6d825311e3abd638c6a1158d#egg=baselines
 blinker==1.4
 brotlipy==0.7.0
 cachetools==3.1.1
@@ -37,8 +36,8 @@ Keras-Preprocessing==1.1.0
 kiwisolver==1.2.0
 Markdown==3.2.2
 matplotlib==3.2.1
-mkl-fft==1.1.0
-mkl-random==1.1.0
+mkl-fft
+mkl-random
 mkl-service==2.3.0
 netifaces==0.10.9
 numpy==1.18.4
@@ -46,9 +45,9 @@ nvidia-ml-py3==7.352.0
 oauthlib==3.0.1
 olefile==0.46
 opencv-python==4.2.0.34
-opt-einsum==0+untagged.56.g2664021.dirty
+opt-einsum
 Pillow==7.1.2
-protobuf==3.11.4
+protobuf
 pyasn1==0.4.8
 pyasn1-modules==0.2.7
 pybullet==2.7.8
@@ -70,12 +69,12 @@ requests-oauthlib==1.2.0
 rsa==4.0
 scipy==1.4.1
 six==1.14.0
-tensorboard==2.1.1
-tensorflow==2.1.0
+tensorboard
+tensorflow
 tensorflow-estimator==2.1.0
 termcolor==1.1.0
 text-unidecode==1.3
-torch==1.0.0
+torch
 torchvision==0.2.1
 tornado==6.0.4
 tqdm==4.46.0
@@ -88,4 +87,5 @@ wurlitzer==2.0.0
 zipp==3.1.0
 gym
 matplotlib
--e git+https://github.com/ministry-of-silly-code/experiment_buddy@projectName#egg=experiment_buddy
+-e git+https://github.com/ministry-of-silly-code/experiment_buddy#egg=experiment_buddy
+-e git+https://github.com/YasmeenVH/growspace#egg=growspace
