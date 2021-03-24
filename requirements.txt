@@ -20,7 +20,6 @@ gast==0.2.2
 google-auth==1.14.3
 google-auth-oauthlib==0.4.1
 google-pasta==0.2.0
--e git+https://github.com/YasmeenVH/growspace.git@bae57678c10939caed504eb29fa4c8450bf81c0d#egg=growspace
 grpcio==1.27.2
 gym==0.15.4
 h5py==2.10.0
@@ -87,5 +86,5 @@ wurlitzer==2.0.0
 zipp==3.1.0
 gym
 matplotlib
--e git+https://github.com/ministry-of-silly-code/experiment_buddy#egg=experiment_buddy
+-e git+https://github.com/ministry-of-silly-code/experiment_buddy@fixRemotesForPush#egg=experiment_buddy
 -e git+https://github.com/YasmeenVH/growspace#egg=growspace
