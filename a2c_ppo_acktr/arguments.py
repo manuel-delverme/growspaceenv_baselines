@@ -153,6 +153,7 @@ def get_args():
         action='store_true',
         default=True,
         help='use a linear schedule on the learning rate')
+    parser.add_argument('--no-buddy', action='store_false', help='disables buddy deployment')
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()

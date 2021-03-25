@@ -4,6 +4,7 @@
    13  sinfo 824484
    14  ls
    15  cat job_error.txt 
+   srun --gres=gpu:1 --nodes=1 --ntasks-per-node=1 --time=01:00:00 --pty bash -i
 
 
 
