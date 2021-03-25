@@ -36,7 +36,6 @@ GitPython==3.1.14
 google-auth==1.14.3
 google-auth-oauthlib==0.4.1
 google-pasta==0.2.0
--e git+ssh://github.com:YasmeenVH/growspace@7dc47158a85e4e5987341dea8386377d6d3c85c9#egg=growspace
 grpcio==1.27.2
 gym==0.15.4
 h5py==2.10.0
