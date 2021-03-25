@@ -29,14 +29,11 @@ from evaluation import evaluate
 
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
 import cv2
-from comet_ml import Experiment
-
 
 def main():
     args = get_args()
 
-    # wandb.init(settings=wandb.Settings(start_method="fork"), project='ppo', entity='growspace')
-    # wandb.config()
+    wandb.run = config.tensorboard.run
 
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -233,6 +230,7 @@ def main():
             end = time.time()
 
             np_hist = np.histogram(np.arange(action_dist.shape[0]), weights=action_dist)
+            # wandb.add_histogram("Actions",np_hist,total_num_steps)
             wandb.log({"Actions": wandb.Histogram(np_histogram=np_hist)}, step=total_num_steps)
             wandb.log({"Reward Min": np.min(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
