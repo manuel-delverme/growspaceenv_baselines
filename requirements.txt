@@ -3,7 +3,6 @@ astor==0.7.1
 astunparse==1.6.3
 atari-py==0.2.6
 attrs==19.3.0
--e git+https://github.com/openai/baselines.git@ea25b9e8b234e6ee1bca43083f8f3cf974143998#egg=baselines
 bcrypt==3.2.0
 blinker==1.4
 brotlipy==0.7.0
@@ -36,7 +35,6 @@ GitPython==3.1.14
 google-auth==1.14.3
 google-auth-oauthlib==0.4.1
 google-pasta==0.2.0
--e git+ssh://github.com:YasmeenVH/growspace@7dc47158a85e4e5987341dea8386377d6d3c85c9#egg=growspace
 grpcio==1.27.2
 gym==0.15.4
 h5py==2.10.0
@@ -56,9 +54,6 @@ llvmlite==0.36.0
 Markdown==3.2.2
 matplotlib==3.2.1
 mkl==2021.1.1
-mkl-fft==1.3.0
-mkl-random==1.2.1
-mkl-service==2.3.0
 mpi4py==3.0.3
 mpmath==1.2.1
 netifaces==0.10.9
