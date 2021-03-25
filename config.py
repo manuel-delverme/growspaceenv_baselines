@@ -43,4 +43,4 @@ no_cuda = False
 cuda = not no_cuda and torch.cuda.is_available()
 
 experiment_buddy.register(locals())
-tensorboard = experiment_buddy.deploy("mila", sweep_yaml="", entity='growspace')
+tensorboard = experiment_buddy.deploy("", sweep_yaml="", entity='growspace')
