@@ -104,3 +104,8 @@ trained_models/
 .fuse_hidden*
 gifs/
 .idea/
+
+.logs/
+baselines/
+wandb/
+runs/
