@@ -1,0 +1,40 @@
+wandb_version: 1
+
+^BRANCH_LENGTH:
+  desc: null
+  value: '0.1111111111111111'
+^BRANCH_THICCNESS:
+  desc: null
+  value: '0.015'
+^FIRST_BRANCH_HEIGHT:
+  desc: null
+  value: '0.24'
+^LIGHT_DIF:
+  desc: null
+  value: '250'
+^LIGHT_WIDTH:
+  desc: null
+  value: '0.25'
+^MAX_BRANCHING:
+  desc: null
+  value: '10'
+^_ignored:
+  desc: null
+  value: '[]'
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.10.23
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.8.5
+    t:
+      1:
+      - 1
+      2:
+      - 1
+      4: 3.8.5
+      5: 0.10.23
+      8:
+      - 5
