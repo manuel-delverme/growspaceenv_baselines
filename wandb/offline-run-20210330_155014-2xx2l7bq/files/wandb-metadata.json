@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.8.0-44-generic-x86_64-with-glibc2.29",
+    "python": "3.8.5",
+    "heartbeatAt": "2021-03-30T13:50:16.512875",
+    "startedAt": "2021-03-30T13:50:14.115996",
+    "docker": null,
+    "gpu": "GeForce RTX 2060 SUPER",
+    "gpu_count": 1,
+    "cpu_count": 24,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/ionelia/pycharm-projects/mila-plants/growspaceenv_baselines/main.py",
+    "codePath": "main.py",
+    "git": {
+        "remote": null,
+        "commit": "be9940b0b629620d951389a35d007aa292173513"
+    },
+    "email": "buzatuionelia@gmail.com",
+    "root": "/home/ionelia/pycharm-projects/mila-plants/growspaceenv_baselines",
+    "host": "ionelia-MS-7C91",
+    "username": "ionelia",
+    "executable": "/home/ionelia/pycharm-projects/mila-plants/venv38/bin/python"
+}
