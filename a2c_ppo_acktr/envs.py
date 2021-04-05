@@ -29,7 +29,7 @@ except ImportError:
     pass
 
 
-def make_env(env_id, seed, rank, log_dir, allow_early_resets, custom_gym):
+def make_env(env_id, seed, rank, log_dir, allow_early_resets, custom_gym, record=False):
     def _thunk():
         print("CUSTOM GYM:", custom_gym)
         if custom_gym is not None and custom_gym != "":
@@ -53,7 +53,7 @@ def make_env(env_id, seed, rank, log_dir, allow_early_resets, custom_gym):
                 env,
                 os.path.join(log_dir, str(rank)),
                 allow_early_resets=allow_early_resets)
-            
+
         #elif len(env.observation_space.shape) == 3:
             #raise NotImplementedError(
                 #"CNN models work only for atari,\n"
@@ -64,6 +64,9 @@ def make_env(env_id, seed, rank, log_dir, allow_early_resets, custom_gym):
         obs_shape = env.observation_space.shape
         if len(obs_shape) == 3 and obs_shape[2] in [1, 3]:
             env = TransposeImage(env, op=[2, 0, 1])
+
+        if record:
+            env = gym.wrappers.Monitor(env, "recording", force=True, mode="evaluation")
 
         return env
 
@@ -78,9 +81,11 @@ def make_vec_envs(env_name,
                   device,
                   allow_early_resets,
                   custom_gym,
-                  num_frame_stack=None):
+                  num_frame_stack=None,
+                  record=False
+                  ):
     envs = [
-        make_env(env_name, seed, i, log_dir, allow_early_resets, custom_gym)
+        make_env(env_name, seed, i, log_dir, allow_early_resets, custom_gym, record=record)
         for i in range(num_processes)
     ]
 

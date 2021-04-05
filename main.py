@@ -105,7 +105,7 @@ def main():
         file_name = os.path.join(
             config.gail_experts_dir, "trajs_{}.pt".format(
                 config.env_name.split('-')[0].lower()))
-        
+
         expert_dataset = gail.ExpertDataset(
             file_name, num_trajectories=4, subsample_frequency=20)
         drop_last = len(expert_dataset) > config.gail_batch_size
@@ -348,9 +348,11 @@ def main():
 
         if (config.eval_interval is not None and len(episode_rewards) > 1
                 and j % config.eval_interval == 0):
-            ob_rms = utils.get_vec_normalize(envs).ob_rms
-            evaluate(actor_critic, ob_rms, config.env_name, config.seed,
-                     config.num_processes, eval_log_dir, device)
+            ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
+            evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device,  config.custom_gym)
+
+    ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
+    evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
 
 
 if __name__ == "__main__":

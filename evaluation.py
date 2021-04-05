@@ -1,3 +1,5 @@
+import gym
+import gym.wrappers
 import numpy as np
 import torch
 
@@ -6,14 +8,22 @@ from a2c_ppo_acktr.envs import make_vec_envs
 
 
 def evaluate(actor_critic, ob_rms, env_name, seed, num_processes, eval_log_dir,
-             device):
-    eval_envs = make_vec_envs(env_name, seed + num_processes, num_processes,
-                              None, eval_log_dir, device, True)
+             device, custom_gym):
+    eval_envs = make_vec_envs(env_name, seed + num_processes, num_processes, None, eval_log_dir, device, True, custom_gym, record=True)
 
     vec_norm = utils.get_vec_normalize(eval_envs)
     if vec_norm is not None:
         vec_norm.eval()
         vec_norm.ob_rms = ob_rms
+
+    from gym.envs.classic_control import rendering
+    org_constructor = rendering.Viewer.__init__
+
+    def constructor(self, *args, **kwargs):
+        org_constructor(self, *args, **kwargs)
+        self.window.set_visible(visible=False)
+
+    rendering.Viewer.__init__ = constructor
 
     eval_episode_rewards = []
 
