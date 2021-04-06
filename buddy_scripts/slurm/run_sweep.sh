@@ -21,6 +21,7 @@ module load python/3.7
 module load pytorch/1.7
 module load mujoco
 module load mujoco-py
+module load tensorflow
 
 FOLDER=$SLURM_TMPDIR/src/
 
