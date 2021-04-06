@@ -8,7 +8,6 @@ tensorflow
 numpy
 opencv-python
 Pillow
-pybullet
 scipy
 tensorboard
 tqdm
