@@ -31,29 +31,28 @@ os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
 import cv2
 
 def main():
-    args = get_args()
 
     wandb.run = config.tensorboard.run
 
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed_all(args.seed)
+    torch.manual_seed(config.seed)
+    torch.cuda.manual_seed_all(config.seed)
 
-    if args.cuda and torch.cuda.is_available() and args.cuda_deterministic:
+    if config.cuda and torch.cuda.is_available() and config.cuda_deterministic:
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
 
-    log_dir = os.path.expanduser(args.log_dir)
+    log_dir = os.path.expanduser(config.log_dir)
     eval_log_dir = log_dir + "_eval"
     utils.cleanup_log_dir(log_dir)
     utils.cleanup_log_dir(eval_log_dir)
 
     torch.set_num_threads(1)
-    device = torch.device("cuda:0" if args.cuda else "cpu")
+    device = torch.device("cuda:0" if config.cuda else "cpu")
 
-    envs = make_vec_envs(args.env_name, args.seed, args.num_processes,
-                         args.gamma, args.log_dir, device, False, args.custom_gym)
+    envs = make_vec_envs(config.env_name, config.seed, config.num_processes,
+                         config.gamma, config.log_dir, device, False, config.custom_gym)
 
-    if "Mnist" in args.env_name:
+    if "Mnist" in config.env_name:
         base = 'Mnist'
     else:
         base = None
@@ -62,54 +61,55 @@ def main():
         envs.observation_space.shape,
         envs.action_space,
         base,
-        base_kwargs={'recurrent': args.recurrent_policy})
+        base_kwargs={'recurrent': config.recurrent_policy})
     actor_critic.to(device)
+    evaluate(actor_critic, None, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
 
-    if args.algo == 'a2c':
+    if config.algo == 'a2c':
         agent = algo.A2C_ACKTR(
             actor_critic,
-            args.value_loss_coef,
-            args.entropy_coef,
-            lr=args.lr,
-            eps=args.eps,
-            alpha=args.alpha,
-            max_grad_norm=args.max_grad_norm
-        )
-    elif args.algo == 'ppo':
+            config.value_loss_coef,
+            config.entropy_coef,
+            lr=config.lr,
+            eps=config.eps,
+            alpha=config.alpha,
+            max_grad_norm=config.max_grad_norm)
+    elif config.algo == 'ppo':
         agent = algo.PPO(
             actor_critic,
-            args.clip_param,
-            args.ppo_epoch,
-            args.num_mini_batch,
-            args.value_loss_coef,
-            args.entropy_coef,
-            lr=args.lr,
-            eps=args.eps,
-            max_grad_norm=args.max_grad_norm,
+            config.clip_param,
+            config.ppo_epoch,
+            config.num_mini_batch,
+            config.value_loss_coef,
+            config.entropy_coef,
+            lr=config.lr,
+            eps=config.eps,
+            max_grad_norm=config.max_grad_norm,
             optimizer="adam"
         )
-    elif args.algo == 'acktr':
-        agent = algo.A2C_ACKTR(actor_critic, args.value_loss_coef, args.entropy_coef, acktr=True)
+    elif config.algo == 'acktr':
+        agent = algo.A2C_ACKTR(
+            actor_critic, config.value_loss_coef, config.entropy_coef, acktr=True)
 
-    if args.gail:
+    if config.gail:
         assert len(envs.observation_space.shape) == 1
         discr = gail.Discriminator(
             envs.observation_space.shape[0] + envs.action_space.shape[0], 100,
             device)
         file_name = os.path.join(
-            args.gail_experts_dir, "trajs_{}.pt".format(
-                args.env_name.split('-')[0].lower()))
+            config.gail_experts_dir, "trajs_{}.pt".format(
+                config.env_name.split('-')[0].lower()))
 
         expert_dataset = gail.ExpertDataset(
             file_name, num_trajectories=4, subsample_frequency=20)
-        drop_last = len(expert_dataset) > args.gail_batch_size
+        drop_last = len(expert_dataset) > config.gail_batch_size
         gail_train_loader = torch.utils.data.DataLoader(
             dataset=expert_dataset,
-            batch_size=args.gail_batch_size,
+            batch_size=config.gail_batch_size,
             shuffle=True,
             drop_last=drop_last)
 
-    rollouts = RolloutStorage(args.num_steps, args.num_processes,
+    rollouts = RolloutStorage(config.num_steps, config.num_processes,
                               envs.observation_space.shape, envs.action_space,
                               actor_critic.recurrent_hidden_state_size)
 
@@ -132,19 +132,20 @@ def main():
     episode_total = 0
 
     start = time.time()
-    num_updates = int(args.num_env_steps) // args.num_steps // args.num_processes
+    num_updates = int(
+        config.num_env_steps) // config.num_steps // config.num_processes
     x = 0
 
     for j in range(num_updates):
         action_dist = np.zeros(envs.action_space.n)
 
-        if args.use_linear_lr_decay:
+        if config.use_linear_lr_decay:
             # decrease learning rate linearly
             utils.update_linear_schedule(
                 agent.optimizer, j, num_updates,
-                agent.optimizer.lr if args.algo == "acktr" else args.lr)
+                agent.optimizer.lr if config.algo == "acktr" else config.lr)
         # new_branches = []
-        for step in range(args.num_steps):
+        for step in range(config.num_steps):
             with torch.no_grad():
                 value, action, action_log_prob, recurrent_hidden_states = actor_critic.act(
                     rollouts.obs[step], rollouts.recurrent_hidden_states[step],
@@ -205,16 +206,33 @@ def main():
         # episode_branches.append(np.asarray([[np.mean(new_branches)]]))
         # print("after")
         # print(episode_branches)
+        if config.gail:
+            if j >= 10:
+                envs.venv.eval()
 
-        rollouts.compute_returns(next_value, args.use_gae, args.gamma, args.gae_lambda, args.use_proper_time_limits)
+            gail_epoch = config.gail_epoch
+            if j < 10:
+                gail_epoch = 100  # Warm up
+            for _ in range(gail_epoch):
+                discr.update(gail_train_loader, rollouts,
+                             utils.get_vec_normalize(envs)._obfilt)
+
+            for step in range(config.num_steps):
+                rollouts.rewards[step] = discr.predict_reward(
+                    rollouts.obs[step], rollouts.actions[step], config.gamma,
+                    rollouts.masks[step])
+
+        rollouts.compute_returns(next_value, config.use_gae, config.gamma,
+                                 config.gae_lambda, config.use_proper_time_limits)
 
         value_loss, action_loss, dist_entropy = agent.update(rollouts)
 
         rollouts.after_update()
 
         # save for every interval-th episode or for the last epoch
-        if (j % args.save_interval == 0 or j == num_updates - 1) and args.save_dir != "":
-            save_path = os.path.join(args.save_dir, args.algo)
+        if (j % config.save_interval == 0
+                or j == num_updates - 1) and config.save_dir != "":
+            save_path = os.path.join(config.save_dir, config.algo)
             try:
                 os.makedirs(save_path)
             except OSError as error:
@@ -223,29 +241,30 @@ def main():
             torch.save([
                 actor_critic,
                 getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
-            ], os.path.join(save_path, args.env_name + ".pt"))
+            ], os.path.join(save_path, config.env_name + ".pt"))
 
-        if j % args.log_interval == 0 and len(episode_rewards) > 1:
-            total_num_steps = (j + 1) * args.num_processes * args.num_steps
+        if j % config.log_interval == 0 and len(episode_rewards) > 1:
+            total_num_steps = (j + 1) * config.num_processes * config.num_steps
             end = time.time()
 
             np_hist = np.histogram(np.arange(action_dist.shape[0]), weights=action_dist)
             # wandb.add_histogram("Actions",np_hist,total_num_steps)
             wandb.log({"Actions": wandb.Histogram(np_histogram=np_hist)}, step=total_num_steps)
             wandb.log({"Reward Min": np.min(episode_rewards)}, step=total_num_steps)
+            wandb.log({"Episode Reward": episode_rewards}, step=total_num_steps)
+            wandb.log({"Summed Reward": np.sum(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
             wandb.log({"EPISODE REWARD": episode_rewards}, step=total_num_steps)
             wandb.log({"Reward Max": np.max(episode_rewards)}, step=total_num_steps)
             wandb.log({"Number of Mean New Branches": np.mean(episode_branches)}, step=total_num_steps)
             wandb.log({"Number of Max New Branches": np.max(episode_branches)}, step=total_num_steps)
             wandb.log({"Number of Min New Branches": np.min(episode_branches)}, step=total_num_steps)
-            wandb.log({"Number of Mean New Branches of Plant 1": np.mean(episode_branch1)}, step=total_num_steps)
+            wandb.log({"Number of Mean New Branches of Plant 1": np.mean(episode_branch1)}, step = total_num_steps)
             wandb.log({"Number of Mean New Branches of Plant 2": np.mean(episode_branch2)}, step=total_num_steps)
             wandb.log({"Number of Total Displacement of Light": np.sum(episode_light_move)}, step=total_num_steps)
-            wandb.log({"Mean Light Displacement": np.mean(episode_light_move)}, step=total_num_steps)
-            wandb.log({"Mean Light Width": np.mean(episode_light_width)}, step=total_num_steps)
-            wandb.log({"Number of Steps in Episode with Tree is as close as possible": np.sum(episode_success)},
-                      step=total_num_steps)
+            wandb.log({"Mean Light Displacement": episode_light_move}, step=total_num_steps)
+            wandb.log({"Mean Light Width": episode_light_width}, step=total_num_steps)
+            wandb.log({"Number of Steps in Episode with Tree is as close as possible": np.sum(episode_success)},step=total_num_steps)
             wandb.log({"Number of Total New Branches": np.sum(episode_branches)}, step=total_num_steps)
             wandb.log({"Episode Length Mean ": np.mean(episode_length)}, step=total_num_steps)
             wandb.log({"Episode Length Min": np.min(episode_length)}, step=total_num_steps)
@@ -280,10 +299,13 @@ def main():
             episode_light_position.clear()
             episode_light_width.clear()
 
-        if (args.eval_interval is not None and len(episode_rewards) > 1
+        if (config.eval_interval is not None and len(episode_rewards) > 1
                 and j % args.eval_interval == 0):
-            ob_rms = utils.get_vec_normalize(envs).ob_rms
-            evaluate(actor_critic, ob_rms, args.env_name, args.seed, args.num_processes, eval_log_dir, device)
+            ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
+            evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device,  config.custom_gym)
+
+    ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
+    evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
 
 
 if __name__ == "__main__":

@@ -72,8 +72,8 @@ def make_movie_list():
         if os.listdir(png_dir)[i].startswith("step"):
             movie_files.append(os.listdir(png_dir)[i])
 
-    return movie_files
 
+    return movie_files
 
 def natural_keys(text):
     '''
@@ -81,4 +81,4 @@ def natural_keys(text):
     http://nedbatchelder.com/blog/200712/human_sorting.html
     (See Toothy's implementation in the comments)
     '''
-    return [atoi(c) for c in re.split(r'(\d+)', text)]
+    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
