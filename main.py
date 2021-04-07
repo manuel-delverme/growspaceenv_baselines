@@ -152,9 +152,6 @@ def main():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
 
-                    # if j % args.log_interval == 0 and len(episode_rewards) > 1:
-                    #     wandb.log({"Episode Reward": info['episode']['r'].item()}, step=total_num_steps)
-
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
 
@@ -243,7 +240,7 @@ def main():
             wandb.log({"Reward Min": np.min(episode_rewards)}, step=total_num_steps)
             wandb.log({"Episode Reward": episode_rewards}, step=total_num_steps)
             wandb.log({"Summed Reward": np.sum(episode_rewards)}, step=total_num_steps)
-            wandb.log({"Reward Mean": np.mean(episode_rewards)}, step=total_num_steps)
+            wandb.log({"Reward_Mean": np.mean(episode_rewards)}, step=total_num_steps)
             wandb.log({"Reward Max": np.max(episode_rewards)}, step=total_num_steps)
             wandb.log({"Number of Mean New Branches": np.mean(episode_branches)}, step=total_num_steps)
             wandb.log({"Number of Max New Branches": np.max(episode_branches)}, step=total_num_steps)
