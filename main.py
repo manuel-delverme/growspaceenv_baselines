@@ -1,21 +1,10 @@
-#try:
-#    from comet_ml import Experiment
-#    comet_loaded = True
-#except ImportError:
-#    comet_loaded = False
 import cv2
-import copy
-import glob
-import os
-import sys
-import time
-from collections import deque
-import gym
 import numpy as np
+import os
+import time
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
+import torch.backends.cudnn
+
 import config
 import wandb
 from a2c_ppo_acktr import algo, utils
@@ -24,24 +13,12 @@ from a2c_ppo_acktr.envs import make_vec_envs
 from a2c_ppo_acktr.model import Policy
 from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
-import os
+
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**84)
-from comet_ml import Experiment
+
 
 def main():
 
-    #if comet_loaded:
-       # experiment = Experiment(
-            #api_key="WRmA8ms9A78K85fLxcv8Nsld9",
-            #project_name="growspace-tests",
-            #workspace="yasmeenvh")
-        #experiment.set_name(config.comet)
-        #for key, value in vars(config).items():
-            #experiment.log_parameter(key, value)
-    #else:
-        #experiment = None
-    # wandb.init(settings=wandb.Settings(start_method="fork"),project='ppo', entity='growspace')
-    #wandb.config()
     wandb.run = config.tensorboard.run
 
     torch.manual_seed(config.seed)
