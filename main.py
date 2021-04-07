@@ -152,9 +152,6 @@ def main():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
 
-                    # if j % args.log_interval == 0 and len(episode_rewards) > 1:
-                    #     wandb.log({"Episode Reward": info['episode']['r'].item()}, step=total_num_steps)
-
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
 

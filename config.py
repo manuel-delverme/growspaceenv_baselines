@@ -46,8 +46,8 @@ optimizer = "adam"
 
 experiment_buddy.register(locals())
 tensorboard = experiment_buddy.deploy(
-    "",
-    sweep_yaml="",
-    proc_num=1,
+    "mila",
+    sweep_yaml="./sweep.yaml",
+    proc_num=10,
     wandb_kwargs={"entity": "growspace"}
 )
