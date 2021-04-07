@@ -122,3 +122,5 @@ wandb
 
 .logs/
 baselines/
+
+rgbbgr.gif
