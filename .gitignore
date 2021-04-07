@@ -104,7 +104,6 @@ trained_models/
 .fuse_hidden*
 gifs/
 .idea/
-<<<<<<< HEAD
 
 # lia stuff
 PPO2*
@@ -115,9 +114,11 @@ recording
 videos
 other_experiments.py
 train_with_ppo_stable_baselines.py
-=======
 
 runs
 wandb
 /wandb/
->>>>>>> Spotlight
+
+
+.logs/
+baselines/

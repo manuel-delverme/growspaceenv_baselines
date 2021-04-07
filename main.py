@@ -1,27 +1,37 @@
-import copy
 import logging
+import copy
 import glob
 import os
 import time
 from collections import deque
-import gym
+
+import cv2
 import numpy as np
 import torch
+import torch.backends.cudnn
+from comet_ml import Experiment
+from tqdm import tqdm
+
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import config
 import wandb
+import numpy as np
+import torch
+
 from a2c_ppo_acktr import algo, utils
+from a2c_ppo_acktr.arguments import get_args
 from a2c_ppo_acktr.algo import gail
 from a2c_ppo_acktr.envs import make_vec_envs
 from a2c_ppo_acktr.model import Policy
 from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
-import os
-os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**84)
-import cv2
-import config
 
+os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
+import cv2
+from comet_ml import Experiment
+import config
 
 def main():
     wandb.run = config.tensorboard.run
@@ -55,6 +65,7 @@ def main():
         base,
         base_kwargs={'recurrent': config.recurrent_policy})
     actor_critic.to(device)
+    evaluate(actor_critic, None, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
 
     if config.algo == 'a2c':
         agent = algo.A2C_ACKTR(
@@ -90,7 +101,7 @@ def main():
         file_name = os.path.join(
             config.gail_experts_dir, "trajs_{}.pt".format(
                 config.env_name.split('-')[0].lower()))
-        
+
         expert_dataset = gail.ExpertDataset(
             file_name, num_trajectories=4, subsample_frequency=20)
         drop_last = len(expert_dataset) > config.gail_batch_size
@@ -119,13 +130,14 @@ def main():
     episode_light_position = []
     episode_beam_width = []
 
-    episode_success_rate = []
+    episode_success_rate = deque(maxlen=100)
     episode_total = 0
 
     start = time.time()
     num_updates = int(
         config.num_env_steps) // config.num_steps // config.num_processes
     x = 0
+
     for j in range(num_updates):
 
         action_dist = np.zeros(envs.action_space.n)
@@ -135,6 +147,7 @@ def main():
             utils.update_linear_schedule(
                 agent.optimizer, j, num_updates,
                 agent.optimizer.lr if config.algo == "acktr" else config.lr)
+        # new_branches = []
         for step in range(config.num_steps):
             with torch.no_grad():
                 value, action, action_log_prob, recurrent_hidden_states = actor_critic.act(
@@ -152,12 +165,12 @@ def main():
                     episode_rewards.append(info['episode']['r'])
                     episode_length.append(info['episode']['l'])
 
+                    # if j % args.log_interval == 0 and len(episode_rewards) > 1:
+                    #     wandb.log({"Episode Reward": info['episode']['r'].item()}, step=total_num_steps)
+
                 if 'new_branches' in info.keys():
                     episode_branches.append(info['new_branches'])
-                    #print("what is in new branches", info['new_branches'])
-                    # print("type of data:", type(info['new_branches']))
 
-                    #print("what is new branches", new_branches)
                 if 'new_b1' in info.keys():
                     episode_branch1.append(info['new_b1'])
 
@@ -166,16 +179,13 @@ def main():
 
                 if 'light_width' in info.keys():
                     episode_light_width.append(info['light_width'])
-                    #print("what is new branches", new_branches)
 
                 if 'light_move' in info.keys():
                     episode_light_move.append(info['light_move'])
-                    #light_move_ep.append(info['light_move'])
-                    #print("what is new branches", new_branches)
+                    # print("what is new branches", new_branches)
 
                 if 'success' in info.keys():
                     episode_success.append(info['success'])
-                    # print("what is new branches", new_branches)
 
                 if j == x:
                     if 'img' in info.keys():
@@ -195,10 +205,10 @@ def main():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
                 rollouts.masks[-1]).detach()
-        #print("before")
-        #episode_branches.append(np.asarray([[np.mean(new_branches)]]))
-        #print("after")
-        #print(episode_branches)
+        # print("before")
+        # episode_branches.append(np.asarray([[np.mean(new_branches)]]))
+        # print("after")
+        # print(episode_branches)
         if config.gail:
             if j >= 10:
                 envs.venv.eval()
@@ -263,51 +273,13 @@ def main():
             wandb.log({"Episode Length Max": np.max(episode_length)}, step=total_num_steps)
             wandb.log({"Entropy": dist_entropy}, step=total_num_steps)
             wandb.log({"Displacement of Light Position": wandb.Histogram(episode_light_position)}, step=total_num_steps)
-
-
-            # if experiment is not None:
-            #     experiment.log_metric(
-            #         "Reward Mean",
-            #         np.mean(episode_rewards),
-            #         step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Reward Min", np.min(episode_rewards), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Reward Max", np.max(episode_rewards), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Number of Mean New Branches", np.mean(episode_branches), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Number of Total New Branches", np.sum(episode_branches), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Number of Min New Branches", np.min(episode_branches), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Number of Max New Branches", np.max(episode_branches), step=total_num_steps)
+            # experiment.log_histogram_3d(name="Displacement Beam Width", values=episode_beam_width,
+            #                             step=total_num_steps)
             #
-            #     experiment.log_metric(
-            #         "Number of Mean New Branches of Plant 1", np.mean(episode_branch1), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Number of Mean New Branches of Plant 2", np.mean(episode_branch2), step=total_num_steps)
-            #
-            #     experiment.log_metric(
-            #         "Number of Total Displacement of Light", np.sum(episode_light_move), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Mean Displacement of Light", np.mean(episode_light_move), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Mean Light Width", np.mean(episode_light_width), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Number of Steps in Episode with Tree is as close as possible", np.sum(episode_success), step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Episode Length Mean ",
-            #         np.mean(episode_length),
-            #         step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Episode Length Min",
-            #         np.min(episode_length),
-            #         step=total_num_steps)
-            #     experiment.log_metric(
-            #         "Episode Length Max",
-            #         np.max(episode_length),
-            #         step=total_num_steps)
+            # experiment.log_histogram_3d(name="Displacement of Light Move", values=episode_light_move,
+            #                             step=total_num_steps)
+            # experiment.log_histogram_3d(name="Displacement Light Width", values=episode_light_width,
+            #                             step=total_num_steps)
 
             print(f"Updates: {j}, timesteps {total_num_steps}, FPS: {int(total_num_steps / (end - start))}, "
                   f"Last reward: {len(episode_rewards)}, \n"
@@ -331,9 +303,11 @@ def main():
 
         if (config.eval_interval is not None and len(episode_rewards) > 1
                 and j % config.eval_interval == 0):
-            ob_rms = utils.get_vec_normalize(envs).ob_rms
-            evaluate(actor_critic, ob_rms, config.env_name, config.seed,
-                     config.num_processes, eval_log_dir, device)
+            ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
+            evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device,  config.custom_gym)
+
+    ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
+    evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
 
 
 if __name__ == "__main__":

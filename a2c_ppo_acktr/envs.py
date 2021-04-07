@@ -1,47 +1,25 @@
-import os
 import importlib
+import os
+
 import gym
 import numpy as np
 import torch
-from gym.spaces.box import Box
-
 from baselines import bench
-from baselines.common.atari_wrappers import make_atari, wrap_deepmind
 from baselines.common.vec_env import VecEnvWrapper
 from baselines.common.vec_env.dummy_vec_env import DummyVecEnv
 from baselines.common.vec_env.shmem_vec_env import ShmemVecEnv
-from baselines.common.vec_env.vec_normalize import \
-    VecNormalize as VecNormalize_
-
-try:
-    import dm_control2gym
-except ImportError:
-    pass
-
-try:
-    import roboschool
-except ImportError:
-    pass
-
-try:
-    import pybullet_envs
-except ImportError:
-    pass
+from baselines.common.vec_env.vec_normalize import VecNormalize as VecNormalize_
+from gym.spaces.box import Box
 
 
-def make_env(env_id, seed, rank, log_dir, allow_early_resets, custom_gym):
+def make_env(env_id, seed, rank, log_dir, allow_early_resets, custom_gym, record=False):
     def _thunk():
         print("CUSTOM GYM:", custom_gym)
         if custom_gym is not None and custom_gym != "":
             module = importlib.import_module(custom_gym, package=None)
             print("imported env '{}'".format((custom_gym)))
 
-        if env_id.startswith("dm"):
-            _, domain, task = env_id.split('.')
-            env = dm_control2gym.make(domain_name=domain, task_name=task)
-        else:
-            env = gym.make(env_id)
-
+        env = gym.make(env_id)
 
         env.seed(seed + rank)
 
@@ -53,12 +31,12 @@ def make_env(env_id, seed, rank, log_dir, allow_early_resets, custom_gym):
                 env,
                 os.path.join(log_dir, str(rank)),
                 allow_early_resets=allow_early_resets)
-            
-        #elif len(env.observation_space.shape) == 3:
-            #raise NotImplementedError(
-                #"CNN models work only for atari,\n"
-               # "please use a custom wrapper for a custom pixel input env.\n"
-                #"See wrap_deepmind for an example.")
+
+        # elif len(env.observation_space.shape) == 3:
+        # raise NotImplementedError(
+        # "CNN models work only for atari,\n"
+        # "please use a custom wrapper for a custom pixel input env.\n"
+        # "See wrap_deepmind for an example.")
 
         # If the input has shape (W,H,3), wrap for PyTorch convolutions
         obs_shape = env.observation_space.shape
@@ -78,9 +56,11 @@ def make_vec_envs(env_name,
                   device,
                   allow_early_resets,
                   custom_gym,
-                  num_frame_stack=None):
+                  num_frame_stack=None,
+                  record=False
+                  ):
     envs = [
-        make_env(env_name, seed, i, log_dir, allow_early_resets, custom_gym)
+        make_env(env_name, seed, i, log_dir, allow_early_resets, custom_gym, record=record)
         for i in range(num_processes)
     ]
 
@@ -222,7 +202,7 @@ class VecPyTorchFrameStack(VecEnvWrapper):
 
         if device is None:
             device = torch.device('cpu')
-        self.stacked_obs = torch.zeros((venv.num_envs, ) +
+        self.stacked_obs = torch.zeros((venv.num_envs,) +
                                        low.shape).to(device)
 
         observation_space = gym.spaces.Box(

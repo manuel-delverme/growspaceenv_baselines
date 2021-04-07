@@ -1,5 +1,6 @@
-import experiment_buddy
 import torch
+
+import experiment_buddy
 
 FIRST_BRANCH_HEIGHT = .24
 BRANCH_THICCNESS = 0.015
@@ -43,4 +44,9 @@ no_cuda = False
 cuda = not no_cuda and torch.cuda.is_available()
 
 experiment_buddy.register(locals())
-tensorboard = experiment_buddy.deploy("", sweep_yaml="", entity='growspace')
+tensorboard = experiment_buddy.deploy(
+    "mila",
+    sweep_yaml="sweep.yaml",
+    proc_num=10,
+    wandb_kwargs={"entity": "growspace"}
+)
