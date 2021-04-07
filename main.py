@@ -1,27 +1,16 @@
-import logging
-import copy
-import glob
-import os
-import time
 from collections import deque
 
 import cv2
+import logging
 import numpy as np
+import os
+import time
 import torch
 import torch.backends.cudnn
-from comet_ml import Experiment
-from tqdm import tqdm
 
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 import config
 import wandb
-import numpy as np
-import torch
-
 from a2c_ppo_acktr import algo, utils
-from a2c_ppo_acktr.arguments import get_args
 from a2c_ppo_acktr.algo import gail
 from a2c_ppo_acktr.envs import make_vec_envs
 from a2c_ppo_acktr.model import Policy
@@ -29,9 +18,7 @@ from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
 
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
-import cv2
-from comet_ml import Experiment
-import config
+
 
 def main():
     wandb.run = config.tensorboard.run
@@ -87,7 +74,7 @@ def main():
             lr=config.lr,
             eps=config.eps,
             max_grad_norm=config.max_grad_norm,
-            optimizer="adam"
+            optimizer=config.optimizer
         )
     elif config.algo == 'acktr':
         agent = algo.A2C_ACKTR(
