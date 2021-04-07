@@ -7,6 +7,7 @@ import os
 import time
 import torch
 import torch.backends.cudnn
+import torch.utils.data
 
 import config
 import wandb
@@ -52,7 +53,8 @@ def main():
         base,
         base_kwargs={'recurrent': config.recurrent_policy})
     actor_critic.to(device)
-    evaluate(actor_critic, None, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
+    evaluate(actor_critic, None, config.env_name, config.seed, config.num_processes, eval_log_dir, device,
+             config.custom_gym)
 
     if config.algo == 'a2c':
         agent = algo.A2C_ACKTR(
@@ -74,7 +76,8 @@ def main():
             lr=config.lr,
             eps=config.eps,
             max_grad_norm=config.max_grad_norm,
-            optimizer=config.optimizer
+            optimizer=config.optimizer,
+            momentum=config.momentum
         )
     elif config.algo == 'acktr':
         agent = algo.A2C_ACKTR(
@@ -218,7 +221,7 @@ def main():
 
         # save for every interval-th episode or for the last epoch
         if (j % config.save_interval == 0
-                or j == num_updates - 1) and config.save_dir != "":
+            or j == num_updates - 1) and config.save_dir != "":
             save_path = os.path.join(config.save_dir, config.algo)
             try:
                 os.makedirs(save_path)
@@ -245,12 +248,13 @@ def main():
             wandb.log({"Number of Mean New Branches": np.mean(episode_branches)}, step=total_num_steps)
             wandb.log({"Number of Max New Branches": np.max(episode_branches)}, step=total_num_steps)
             wandb.log({"Number of Min New Branches": np.min(episode_branches)}, step=total_num_steps)
-            wandb.log({"Number of Mean New Branches of Plant 1": np.mean(episode_branch1)}, step = total_num_steps)
+            wandb.log({"Number of Mean New Branches of Plant 1": np.mean(episode_branch1)}, step=total_num_steps)
             wandb.log({"Number of Mean New Branches of Plant 2": np.mean(episode_branch2)}, step=total_num_steps)
             wandb.log({"Number of Total Displacement of Light": np.sum(episode_light_move)}, step=total_num_steps)
             wandb.log({"Mean Light Displacement": episode_light_move}, step=total_num_steps)
             wandb.log({"Mean Light Width": episode_light_width}, step=total_num_steps)
-            wandb.log({"Number of Steps in Episode with Tree is as close as possible": np.sum(episode_success)},step=total_num_steps)
+            wandb.log({"Number of Steps in Episode with Tree is as close as possible": np.sum(episode_success)},
+                      step=total_num_steps)
             wandb.log({"Number of Total New Branches": np.sum(episode_branches)}, step=total_num_steps)
             wandb.log({"Episode Length Mean ": np.mean(episode_length)}, step=total_num_steps)
             wandb.log({"Episode Length Min": np.min(episode_length)}, step=total_num_steps)
@@ -288,10 +292,12 @@ def main():
         if (config.eval_interval is not None and len(episode_rewards) > 1
                 and j % config.eval_interval == 0):
             ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
-            evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device,  config.custom_gym)
+            evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device,
+                     config.custom_gym)
 
     ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
-    evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
+    evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device,
+             config.custom_gym)
 
 
 if __name__ == "__main__":
