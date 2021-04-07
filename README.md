@@ -1,3 +1,13 @@
+   10  squeue 
+   11  squeue -u $USER
+   12  sacct 824484
+   13  sinfo 824484
+   14  ls
+   15  cat job_error.txt 
+   srun --gres=gpu:1 --nodes=1 --ntasks-per-node=1 --time=01:00:00 --pty bash -i
+
+
+
 # pytorch-a2c-ppo-acktr
 
 ## Please use hyper parameters from this readme. With other hyper parameters things might not work (it's RL after all)!

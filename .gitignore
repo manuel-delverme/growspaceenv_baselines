@@ -105,7 +105,20 @@ trained_models/
 gifs/
 .idea/
 
+# lia stuff
+PPO2*
+please_name_this_gif.gif
+ppo-stable-tensorboard
+recording
+*.zip
+videos
+other_experiments.py
+train_with_ppo_stable_baselines.py
+
+runs
+wandb
+/wandb/
+
+
 .logs/
 baselines/
-wandb/
-runs/
