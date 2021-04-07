@@ -43,6 +43,7 @@ use_linear_lr_decay = True
 no_cuda = False
 cuda = not no_cuda and torch.cuda.is_available()
 optimizer = "adam"
+momentum = 0.9
 
 experiment_buddy.register(locals())
 tensorboard = experiment_buddy.deploy(

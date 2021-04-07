@@ -74,7 +74,8 @@ def main():
             lr=config.lr,
             eps=config.eps,
             max_grad_norm=config.max_grad_norm,
-            optimizer=config.optimizer
+            optimizer=config.optimizer,
+            momentum=config.momentum
         )
     elif config.algo == 'acktr':
         agent = algo.A2C_ACKTR(
