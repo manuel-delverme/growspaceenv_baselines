@@ -3,9 +3,11 @@
 #    comet_loaded = True
 #except ImportError:
 #    comet_loaded = False
+import cv2
 import copy
 import glob
 import os
+import sys
 import time
 from collections import deque
 import gym
@@ -14,6 +16,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import config
 import wandb
 from a2c_ppo_acktr import algo, utils
 from a2c_ppo_acktr.algo import gail
@@ -23,9 +26,7 @@ from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
 import os
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**84)
-import cv2
 from comet_ml import Experiment
-import config
 
 def main():
 
@@ -105,7 +106,7 @@ def main():
         file_name = os.path.join(
             config.gail_experts_dir, "trajs_{}.pt".format(
                 config.env_name.split('-')[0].lower()))
-        
+
         expert_dataset = gail.ExpertDataset(
             file_name, num_trajectories=4, subsample_frequency=20)
         drop_last = len(expert_dataset) > config.gail_batch_size
@@ -348,9 +349,11 @@ def main():
 
         if (config.eval_interval is not None and len(episode_rewards) > 1
                 and j % config.eval_interval == 0):
-            ob_rms = utils.get_vec_normalize(envs).ob_rms
-            evaluate(actor_critic, ob_rms, config.env_name, config.seed,
-                     config.num_processes, eval_log_dir, device)
+            ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
+            evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device,  config.custom_gym)
+
+    ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
+    evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym, gif=True)
 
 
 if __name__ == "__main__":
