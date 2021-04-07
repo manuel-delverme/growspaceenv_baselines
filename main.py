@@ -3,9 +3,11 @@
 #    comet_loaded = True
 #except ImportError:
 #    comet_loaded = False
+import cv2
 import copy
 import glob
 import os
+import sys
 import time
 from collections import deque
 import gym
@@ -14,6 +16,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import config
 import wandb
 from a2c_ppo_acktr import algo, utils
 from a2c_ppo_acktr.algo import gail
@@ -23,9 +26,7 @@ from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
 import os
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**84)
-import cv2
 from comet_ml import Experiment
-import config
 
 def main():
 

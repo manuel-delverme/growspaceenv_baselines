@@ -4,7 +4,6 @@ git+https://git@github.com/ministry-of-silly-code/experiment_buddy.git#egg=exper
 matplotlib
 wandb
 h5py
-tensorflow
 numpy
 opencv-python
 Pillow
