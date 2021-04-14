@@ -1,20 +1,10 @@
-import logging
-import copy
-import glob
-import os
-import time
-from collections import deque
-
 import cv2
 import numpy as np
+import os
+import time
 import torch
 import torch.backends.cudnn
-from comet_ml import Experiment
-from tqdm import tqdm
 
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 import config
 import wandb
 import numpy as np
@@ -27,8 +17,8 @@ from a2c_ppo_acktr.model import Policy
 from a2c_ppo_acktr.storage import RolloutStorage
 from evaluation import evaluate
 
-os.environ['OPENCV_IO_MAX_IMAGE_PIXELS'] = str(2 ** 84)
-import cv2
+os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**84)
+
 
 def main():
 
@@ -63,7 +53,6 @@ def main():
         base,
         base_kwargs={'recurrent': config.recurrent_policy})
     actor_critic.to(device)
-    evaluate(actor_critic, None, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
 
     if config.algo == 'a2c':
         agent = algo.A2C_ACKTR(
@@ -305,7 +294,7 @@ def main():
             evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device,  config.custom_gym)
 
     ob_rms = getattr(utils.get_vec_normalize(envs), 'ob_rms', None)
-    evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym)
+    evaluate(actor_critic, ob_rms, config.env_name, config.seed, config.num_processes, eval_log_dir, device, config.custom_gym, gif=True)
 
 
 if __name__ == "__main__":
